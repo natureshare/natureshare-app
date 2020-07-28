@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v2
+
+      - name: NPM Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run linter
+
+      - name: Next.js build
+        run: npm run build && npm run export
+        env:
+          APP_NAME: ${{ secrets.APP_NAME }}
+          APP_SHORT_NAME: ${{ secrets.APP_SHORT_NAME }}
+          APP_HOST: ${{ secrets.APP_HOST }}
+          OSM_HOST: ${{ secrets.OSM_HOST }}
+          TF_API_KEY: ${{ secrets.TF_API_KEY }}
+          CONTENT_HOST: ${{ secrets.CONTENT_HOST }}
+          SPECIES_HOST: ${{ secrets.SPECIES_HOST }}
+          GH_CONTENT_PATH: ${{ secrets.GH_CONTENT_PATH }}  
+          GH_SPECIES_PATH: ${{ secrets.GH_SPECIES_PATH }}  
+
+      - name: Git Deploy
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          BRANCH: gh-pages
+          FOLDER: out
+          CLEAN: true

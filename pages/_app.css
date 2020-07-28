@@ -1,0 +1,12 @@
+a {
+    text-decoration: none !important;
+}
+
+.leaflet-popup-content {
+  text-align: center;
+}
+
+.leaflet-popup-content img {
+  max-width: 150px;
+  max-height: 150px;
+}

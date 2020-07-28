@@ -1,0 +1,14 @@
+.DS_Store
+
+.next
+/node_modules
+
+/.env
+/build
+/out
+
+/public/docs
+/public/leaflet.js
+aws-s3-sync.sh
+public/content
+public/species

@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  node:
+    image: node:12
+    env_file:
+      - .env
+    volumes:
+      - .:/var/app:delegated
+      - ../natureshare-files:/var/app/public/content:ro
+      - ../natureshare-species-wiki:/var/app/public/species:ro
+    working_dir: /var/app
+    ports:
+      - 3000
+    networks:
+      - www
+      - default
+    command: sh -c "npm run dev"
+
+networks:
+  www:
+    external:
+      name: www
