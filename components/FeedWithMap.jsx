@@ -83,16 +83,7 @@ export default function FeedWithMap({ url, href, h1, children }) {
         [feed],
     );
 
-    const selectPage = useCallback(() => {
-        if (window && typeof window === 'object' && lastPage > 0) {
-            const selected = window.prompt('Page number?', page);
-            if (selected >= 1 && selected <= lastPage) {
-                setPage(selected);
-            }
-        }
-    }, [page, lastPage]);
-
-    const nextPage = (step) => {
+    const scrollToTop = () => {
         if (window && document) {
             const div = document.getElementById('feedItemsGrid');
             // if (div) div.scrollIntoView({behavior: "smooth", block: "start", inline: "start"});
@@ -103,6 +94,20 @@ export default function FeedWithMap({ url, href, h1, children }) {
                     behavior: 'auto',
                 });
         }
+    };
+
+    const selectPage = useCallback(() => {
+        if (window && typeof window === 'object' && lastPage > 0) {
+            const selected = window.prompt('Page number?', page);
+            if (selected >= 1 && selected <= lastPage) {
+                scrollToTop();
+                setPage(selected);
+            }
+        }
+    }, [page, lastPage]);
+
+    const nextPage = (step) => {
+        scrollToTop();
         setPage(page + step);
     };
 

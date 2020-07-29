@@ -12,6 +12,8 @@ const opt = {
 const whitelist = [
     'files.natureshare.org.au',
     'files.natureshare.localhost',
+    'species.natureshare.org.au',
+    'species.natureshare.localhost',
     'natureshare.localhost:3000',
 ];
 

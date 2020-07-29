@@ -22,13 +22,7 @@ export default function Id() {
         const url = resolveUrl(`${i}/`, process.env.contentHost);
         if (url) {
             setFeedUrl(url);
-            const speciesPath = `${_takeRight(
-                i
-                    .split('/')
-                    .map(decodeURIComponent)
-                    .map((s) => s.replace(/\./g, '').replace(/\//g, '~')),
-                3,
-            ).join('/')}.yaml`;
+            const speciesPath = `./${_takeRight(i.split('/'), 3).join('/')}.yaml`;
             fetchYaml(speciesPath, process.env.speciesHost).then((obj) => obj && setSpecies(obj));
         }
     }, []);

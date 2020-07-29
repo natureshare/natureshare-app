@@ -176,7 +176,7 @@ export const writeFilesIndex = ({ index, userDir, subDir, appView, _title, metaC
         feedItems: Object.keys(index).map((i) => {
             const { _meta, ...mixin } = metaCb ? metaCb(i) : {};
             return omitNull({
-                title: _startCase(i.replace(/_/g, ' ')),
+                title: i.replace(/_/g, ' '),
                 content_text: `${index[i].length} items`,
                 image: getFirst(index[i], 'image'),
                 date_published: getFirst(index[i], 'date_published'),

@@ -35,11 +35,8 @@ const idNames = (ary) =>
         ary
             .map((i) => (typeof i === 'object' ? i.name : i))
             .filter((i) => typeof i === 'string')
-            .map(
-                (i) => i.split('/', 1)[0], // Binomial Name / Commmon Name
-            )
-            .filter(Boolean)
-            .map((i) => i.trim()),
+            .map((i) => i.trim())
+            .filter((i) => i.length !== 0),
     );
 
 const loadItem = (userDir, f) => {

@@ -1,4 +1,4 @@
-/* global process */
+/* global process URL */
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
