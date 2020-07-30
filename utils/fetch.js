@@ -1,4 +1,5 @@
-/* global URL */
+/* eslint-disable no-console */
+/* global URL process */
 
 import YAML from 'js-yaml';
 
@@ -8,23 +9,38 @@ const opt = {
     mode: 'cors',
 };
 
-// TODO Load this dynamically:
 const whitelist = [
-    'files.natureshare.org.au',
-    'files.natureshare.localhost',
-    'species.natureshare.org.au',
-    'species.natureshare.localhost',
-    'natureshare.localhost:3000',
-];
+    process.env.contentHost,
+    process.env.contentHostDev,
+    process.env.speciesHost,
+    process.env.speciesHostDev,
+    ...(process.env.externalHosts ? process.env.externalHosts.split(',') : []),
+]
+    .filter(Boolean)
+    .map((i) => new URL(i).host);
 
-export const resolveUrl = (src, host) => {
+export const resolveUrl = (src, host, fixHost) => {
+    if (fixHost !== false && (process.env.contentHostDev || process.env.speciesHostDev)) {
+        return resolveUrl(
+            src
+                .replace(process.env.contentHost, process.env.contentHostDev)
+                .replace(process.env.speciesHost, process.env.speciesHostDev),
+            host
+                ? host
+                      .replace(process.env.contentHost, process.env.contentHostDev)
+                      .replace(process.env.speciesHost, process.env.speciesHostDev)
+                : undefined,
+            false,
+        );
+    }
     try {
         const url = host ? new URL(src, host) : new URL(src);
         if (whitelist.includes(url.host)) {
             return url.href;
         }
+        if (console) console.error('Host not in whitelist:', url.host);
     } catch (e) {
-        // console.error('resolveUrl', src, host);
+        if (console) console.error('resolveUrl', src, host);
     }
     return null;
 };

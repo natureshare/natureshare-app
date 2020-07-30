@@ -7,11 +7,16 @@ const nextConfig = {
         osmHost: process.env.OSM_HOST || 'a.tile.openstreetmap.org',
         tfApiKey: process.env.TF_API_KEY,
 
-        contentHost: process.env.CONTENT_HOST,
-        speciesHost: process.env.SPECIES_HOST,
+        contentHost: process.env.CONTENT_HOST || 'https://files.natureshare.org.au/',
+        contentHostDev: process.env.CONTENT_HOST_DEV,
 
-        githubContentPath: process.env.GH_CONTENT_PATH,
-        githubSpeciesPath: process.env.GH_SPECIES_PATH,
+        speciesHost: process.env.SPECIES_HOST || 'https://species.natureshare.org.au/',
+        speciesHostDev: process.env.SPECIES_HOST_DEV,
+
+        externalHosts: process.env.EXTERNAL_HOSTS,
+
+        githubContentPath: process.env.GH_CONTENT_PATH || 'natureshare/natureshare-files',
+        githubSpeciesPath: process.env.GH_SPECIES_PATH || 'natureshare/natureshare-species-wiki',
     },
     exportTrailingSlash: false,
 };

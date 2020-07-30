@@ -77,7 +77,12 @@ export const writeFiles = ({
     )}`;
 
     const feedItemsSorted = _reverse(
-        _sortBy(feedItems, ['date_published', '_meta.itemCount', 'date_modified']),
+        _sortBy(feedItems, [
+            (i) => (i._meta && i._meta.featured ? 1 : 0),
+            'date_published',
+            '_meta.itemCount',
+            'date_modified',
+        ]),
     );
 
     MkDir.sync(Path.join(cwd, fileDir));

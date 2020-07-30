@@ -98,8 +98,8 @@ export default function FeedWithMap({ url, href, h1, children }) {
 
     const selectPage = useCallback(() => {
         if (window && typeof window === 'object' && lastPage > 0) {
-            const selected = window.prompt('Page number?', page);
-            if (selected >= 1 && selected <= lastPage) {
+            const selected = parseInt(window.prompt('Page number?', page), 10);
+            if (selected && selected >= 1 && selected <= lastPage) {
                 scrollToTop();
                 setPage(selected);
             }
