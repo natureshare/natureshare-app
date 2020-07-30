@@ -36,7 +36,7 @@ const validate = (cwd, f, schema) => {
             console.log('   ', '-->', e.stack.replace(/^instance\s+/, '')),
         );
         console.log('');
-        throw new Error('Failed validation!');
+        // throw new Error('Failed validation!');
     }
 };
 
@@ -45,9 +45,11 @@ const validate = (cwd, f, schema) => {
     [contentPath, ['*', 'collections', '*.yaml'], schemas.collection],
     [contentPath, ['*', 'items', '**', '*.yaml'], schemas.item],
     [speciesPath, ['*', '*', '*.yaml'], schemas.species],
-].forEach(([cwd, glob, schema]) => {
-    console.log(glob);
-    Glob.sync(Path.join(...glob), { cwd }).forEach((f) => {
-        validate(cwd, f, schema);
+]
+    .filter((i) => Boolean(i[0]))
+    .forEach(([cwd, glob, schema]) => {
+        console.log(glob);
+        Glob.sync(Path.join(...glob), { cwd }).forEach((f) => {
+            validate(cwd, f, schema);
+        });
     });
-});
