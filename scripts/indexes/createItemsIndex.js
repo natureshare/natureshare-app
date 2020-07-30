@@ -17,8 +17,8 @@ dotenv.config();
 
 const cwd = process.env.CONTENT_FILE_PATH;
 const appName = process.env.APP_NAME || 'NatureShare';
-const appHost = process.env.APP_HOST || 'https://natureshare.org.au';
-const contentHost = process.env.CONTENT_HOST;
+const appHost = process.env.APP_HOST || 'https://natureshare.org.au/';
+const contentHost = process.env.CONTENT_HOST || 'https://files.natureshare.org.au/';
 
 const coord = (ary) =>
     ary.reduce((acc, val) => acc && Boolean(parseFloat(val)), true)
@@ -99,12 +99,14 @@ const push = (obj, k, i) => {
     obj[k].push(i);
 };
 
+const dirStr = (i) => i.toLowerCase().replace(/\s/g, '_');
+
 const identificationsSubDir = (i) =>
     Path.join(
         'ids',
         i[0].toLowerCase(),
         i.split(' ', 1)[0].toLowerCase(),
-        i.replace(/\//g, '~').replace(/\./g, ''),
+        dirStr(i).replace(/\//g, '~').replace(/\./g, ''),
     );
 
 const build = (userDir) => {
@@ -222,7 +224,7 @@ const build = (userDir) => {
         writeFilesForEach({
             index: tagsIndex,
             userDir,
-            subDirCb: (i) => Path.join('tags', i),
+            subDirCb: (i) => Path.join('tags', dirStr(i)),
             appView: 'tag',
         });
 
@@ -233,7 +235,7 @@ const build = (userDir) => {
             appView: 'tags',
             _title: 'Tags',
             metaCb: (i) => {
-                const filePath = Path.join(userDir, '_index', 'tags', i);
+                const filePath = Path.join(userDir, '_index', 'tags', dirStr(i));
                 const id = new URL(Path.join('.', filePath), contentHost).href;
                 return {
                     id,
@@ -247,7 +249,7 @@ const build = (userDir) => {
         writeFilesForEach({
             index: _mapValues(collectionsIndex, 'items'),
             userDir,
-            subDirCb: (i) => Path.join('collections', i),
+            subDirCb: (i) => Path.join('collections', dirStr(i)),
             appView: 'collection',
             titleCb: (i) => collectionsIndex[i].title,
             descriptionCb: (i) => collectionsIndex[i].description,
@@ -322,7 +324,7 @@ const build = (userDir) => {
 
             writeFiles({
                 userDir,
-                subDir: Path.join('collections', c, 'aggregate'),
+                subDir: Path.join('collections', dirStr(c), 'aggregate'),
                 appView: 'collection',
                 feedItems: collectionsIndex[c].items,
                 _title: collectionsIndex[c].title,
@@ -334,7 +336,8 @@ const build = (userDir) => {
             writeFilesForEach({
                 index: collectionsIndex[c].idIndex,
                 userDir,
-                subDirCb: (i) => Path.join('collections', c, 'aggregate', identificationsSubDir(i)),
+                subDirCb: (i) =>
+                    Path.join('collections', dirStr(c), 'aggregate', identificationsSubDir(i)),
                 appView: 'id',
                 titleCb: (i) => `${collectionsIndex[c].title} / ${i}`,
             });
@@ -342,7 +345,7 @@ const build = (userDir) => {
             writeFilesIndex({
                 index: collectionsIndex[c].idIndex,
                 userDir,
-                subDir: Path.join('collections', c, 'aggregate', 'ids'),
+                subDir: Path.join('collections', dirStr(c), 'aggregate', 'ids'),
                 appView: 'ids',
                 _title: `${collectionsIndex[c].title} / Identifications`,
                 metaCb: (i) => {
@@ -350,7 +353,7 @@ const build = (userDir) => {
                         userDir,
                         '_index',
                         'collections',
-                        c,
+                        dirStr(c),
                         'aggregate',
                         identificationsSubDir(i),
                     );
@@ -367,7 +370,8 @@ const build = (userDir) => {
             writeFilesForEach({
                 index: collectionsIndex[c].tagsIndex,
                 userDir,
-                subDirCb: (i) => Path.join('collections', c, 'aggregate', 'tags', i),
+                subDirCb: (i) =>
+                    Path.join('collections', dirStr(c), 'aggregate', 'tags', dirStr(i)),
                 appView: 'tag',
                 titleCb: (i) => `${collectionsIndex[c].title} / ${i}`,
             });
@@ -375,7 +379,7 @@ const build = (userDir) => {
             writeFilesIndex({
                 index: collectionsIndex[c].tagsIndex,
                 userDir,
-                subDir: Path.join('collections', c, 'aggregate', 'tags'),
+                subDir: Path.join('collections', dirStr(c), 'aggregate', 'tags'),
                 appView: 'tags',
                 _title: `${collectionsIndex[c].title} / Tags`,
                 metaCb: (i) => {
@@ -383,10 +387,10 @@ const build = (userDir) => {
                         userDir,
                         '_index',
                         'collections',
-                        c,
+                        dirStr(c),
                         'aggregate',
                         'tags',
-                        i,
+                        dirStr(i),
                     );
                     const id = new URL(Path.join('.', filePath), contentHost).href;
                     return {
@@ -406,7 +410,13 @@ const build = (userDir) => {
             appView: 'collections',
             _title: 'Collections',
             metaCb: (i) => {
-                const filePath = Path.join(userDir, '_index', 'collections', i, 'aggregate');
+                const filePath = Path.join(
+                    userDir,
+                    '_index',
+                    'collections',
+                    dirStr(i),
+                    'aggregate',
+                );
                 const id = new URL(Path.join('.', filePath), contentHost).href;
                 return omitNull({
                     id,

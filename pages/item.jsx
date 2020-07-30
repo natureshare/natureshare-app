@@ -36,6 +36,8 @@ const showOriginalFile = (url) => {
     }
 };
 
+const dirStr = (i) => i.toLowerCase().replace(/\s/g, '_');
+
 export default function Item() {
     const router = useRouter();
 
@@ -217,6 +219,12 @@ export default function Item() {
                         ))}
                 </Box>
             )}
+            {item.description && item.description.length > 0 && (
+                <Box mt={3}>
+                    <H3>Description</H3>
+                    <P>{item.description}</P>
+                </Box>
+            )}
             {item.id && item.id.length > 0 && (
                 <Box mt={3}>
                     <H3>Identification</H3>
@@ -236,9 +244,9 @@ export default function Item() {
                                         relativeUrl(
                                             `../../../_index/ids/${name[0].toLowerCase()}/${name
                                                 .split(' ', 1)[0]
-                                                .toLowerCase()}/${name
-                                                .replace(/\//g, '~')
-                                                .replace(/\./g, '')}`,
+                                                .toLowerCase()}/${dirStr(
+                                                name.replace(/\//g, '~').replace(/\./g, ''),
+                                            )}`,
                                         ),
                                     )}`}
                                 >
@@ -254,12 +262,6 @@ export default function Item() {
                                 </ListItem>
                             ))}
                     </List>
-                </Box>
-            )}
-            {item.description && item.description.length > 0 && (
-                <Box mt={3}>
-                    <H3>Description</H3>
-                    <P>{item.description}</P>
                 </Box>
             )}
             {item.tags && item.tags.length > 0 && (
@@ -281,7 +283,7 @@ export default function Item() {
                                     component={Link}
                                     href="/tag"
                                     as={`/collection?i=${encodeURIComponent(
-                                        relativeUrl(`../../../_index/tags/${tag}`),
+                                        relativeUrl(`../../../_index/tags/${dirStr(tag)}`),
                                     )}`}
                                 />
                             </Grid>
@@ -301,7 +303,9 @@ export default function Item() {
                                 component={Link}
                                 href="/collection"
                                 as={`/collection?i=${encodeURIComponent(
-                                    relativeUrl(`../../../_index/collections/${name}/aggregate`),
+                                    relativeUrl(
+                                        `../../../_index/collections/${dirStr(name)}/aggregate`,
+                                    ),
                                 )}`}
                             >
                                 <ListItemText primary={name} />

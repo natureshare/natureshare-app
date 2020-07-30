@@ -16,8 +16,8 @@ dotenv.config();
 
 const cwd = process.env.CONTENT_FILE_PATH;
 const appName = process.env.APP_NAME || 'NatureShare';
-const appHost = process.env.APP_HOST || 'https://natureshare.org.au';
-const contentHost = process.env.CONTENT_HOST;
+const appHost = process.env.APP_HOST || 'https://natureshare.org.au/';
+const contentHost = process.env.CONTENT_HOST || 'https://files.natureshare.org.au/';
 
 const items = [];
 
