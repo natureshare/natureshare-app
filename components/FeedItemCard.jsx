@@ -4,11 +4,12 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Typography from '@material-ui/core/Typography';
-import StarIcon from 'mdi-material-ui/Star';
+import StarIcon from 'mdi-material-ui/StarOutline';
 import ItemIcon from 'mdi-material-ui/Eye';
 import ImageIcon from 'mdi-material-ui/Camera';
 import VideoIcon from 'mdi-material-ui/Video';
 import AudioIcon from 'mdi-material-ui/VolumeHigh';
+import MapMarkerCheck from 'mdi-material-ui/MapMarkerCheckOutline';
 import Chip from '@material-ui/core/Chip';
 import Box from '@material-ui/core/Box';
 import LeafIcon from 'mdi-material-ui/Leaf';
@@ -68,11 +69,19 @@ export default function FeedItemCard({
                                     {datePublished.split('T', 1)[0]}
                                 </Typography>
                             )}
-                            {_meta && _meta.date && (
-                                <Typography variant="body2" component="div" style={{ margin: 0 }}>
-                                    {_meta.date}
-                                </Typography>
-                            )}
+                            <Typography variant="body2" component="div" style={{ margin: 0 }}>
+                                {_meta.date || 'No date'}
+                                {_meta && _meta.coordinates && (
+                                    <MapMarkerCheck
+                                        style={{ fontSize: 12, color: '#555', marginLeft: '3px' }}
+                                    />
+                                )}
+                                {_meta && _meta.featured && (
+                                    <StarIcon
+                                        style={{ fontSize: 12, color: '#555', marginLeft: '3px' }}
+                                    />
+                                )}
+                            </Typography>
                             {author && author.name && (
                                 <Typography
                                     variant="body2"
@@ -100,19 +109,10 @@ export default function FeedItemCard({
                                                         label={_meta[i]}
                                                         style={{
                                                             backgroundColor: '#FFF',
-                                                            marginRight: '0.25em',
                                                         }}
                                                     />
                                                 )) ||
                                                 '',
-                                        )}
-                                        {_meta.featured && (
-                                            <Chip
-                                                size="small"
-                                                icon={<StarIcon />}
-                                                label="Featured"
-                                                style={{ backgroundColor: '#FFF' }}
-                                            />
                                         )}
                                     </>
                                 )}
