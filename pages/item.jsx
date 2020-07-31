@@ -245,7 +245,7 @@ export default function Item() {
                                             `../../../_index/ids/${name[0].toLowerCase()}/${name
                                                 .split(' ', 1)[0]
                                                 .toLowerCase()}/${dirStr(
-                                                name.replace(/\//g, '~').replace(/\./g, ''),
+                                                name.replace(/\//g, '~').replace(/[.'"`]/g, ''),
                                             )}`,
                                         ),
                                     )}`}

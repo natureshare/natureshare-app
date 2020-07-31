@@ -106,7 +106,9 @@ const identificationsSubDir = (i) =>
         'ids',
         i[0].toLowerCase(),
         i.split(' ', 1)[0].toLowerCase(),
-        dirStr(i).replace(/\//g, '~').replace(/\./g, ''),
+        dirStr(i)
+            .replace(/\//g, '~')
+            .replace(/[.'"`]/g, ''),
     );
 
 const build = (userDir) => {
