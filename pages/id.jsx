@@ -1,6 +1,6 @@
 /* eslint-disable react/no-array-index-key */
 /* global process */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import queryString from 'query-string';
 import Box from '@material-ui/core/Box';
@@ -10,6 +10,7 @@ import _takeRight from 'lodash/takeRight';
 import FeedWithMap from '../components/FeedWithMap';
 import { resolveUrl, fetchYaml } from '../utils/fetch';
 import { H2, H3 } from '../components/Typography';
+import Link from '../components/Link';
 
 export default function Id() {
     const router = useRouter();
@@ -17,15 +18,32 @@ export default function Id() {
     const [feedUrl, setFeedUrl] = useState(null);
     const [species, setSpecies] = useState({});
 
-    useEffect(() => {
-        const { i } = queryString.parse(router.asPath.split(/\?/)[1]);
+    const updateUrl = (routerPath) => {
+        const { i } = queryString.parse(routerPath.split(/\?/)[1]);
         const url = resolveUrl(`${i}/`, process.env.contentHost);
         if (url) {
             setFeedUrl(url);
             const speciesPath = `./${_takeRight(i.split('/'), 3).join('/')}.yaml`;
-            fetchYaml(speciesPath, process.env.speciesHost).then((obj) => obj && setSpecies(obj));
+            fetchYaml(speciesPath, process.env.speciesHost).then((obj) =>
+                obj ? setSpecies(obj) : setSpecies({}),
+            );
         }
+    };
+
+    useEffect(() => {
+        const handleRouteChange = (url) => {
+            updateUrl(url);
+        };
+        router.events.on('routeChangeComplete', handleRouteChange);
+        return () => {
+            router.events.off('routeChangeComplete', handleRouteChange);
+        };
     }, []);
+
+    const relativeUrl = useCallback(
+        (url) => resolveUrl(url, feedUrl).replace(process.env.contentHost, './').replace(/\/$/, ''),
+        [feedUrl],
+    );
 
     return (
         <FeedWithMap url={feedUrl} href="item">
@@ -36,9 +54,26 @@ export default function Id() {
                 <Box mt={3}>
                     <H3>Synonyms</H3>
                     <Grid container spacing={1}>
-                        {species.synonyms.map(({ name: i }) => (
+                        {species.synonyms.map((i) => (
                             <Grid item key={i}>
-                                <Chip label={i} variant="outlined" />
+                                <Chip
+                                    label={i}
+                                    variant="outlined"
+                                    component={Link}
+                                    onClick={() => {}}
+                                    href="/id"
+                                    as={`/id?i=${encodeURIComponent(
+                                        relativeUrl(
+                                            `../../../${i[0].toLowerCase()}/${i
+                                                .split(' ', 1)[0]
+                                                .toLowerCase()}/${i
+                                                .toLowerCase()
+                                                .replace(/\s/g, '_')
+                                                .replace(/\//g, '~')
+                                                .replace(/[.'"`]/g, '')}`,
+                                        ),
+                                    )}`}
+                                />
                             </Grid>
                         ))}
                     </Grid>

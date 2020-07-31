@@ -71,33 +71,32 @@ export default function GeoJsonMap({ geo }) {
 
     useEffect(() => {
         if (
-            geo &&
-            geo.type &&
-            geo.type === 'FeatureCollection' &&
-            geo.features.length > 0 &&
             typeof window === 'object' &&
             typeof window.L === 'object' &&
             geoBaseLayer.current &&
             lMap.current
         ) {
-            const geoLayer = window.L.geoJSON(geo, {
-                pointToLayer: (feature, latlng) => {
-                    return window.L.circleMarker(latlng, {
-                        radius: 8,
-                        weight: 5,
-                        color: '#00f',
-                        opacity: 0.2,
-                        fill: true,
-                        fillOpacity: 1,
-                    });
-                },
-                style: {
-                    fillOpacity: 0.6,
-                },
-                onEachFeature: ({ properties }, featureLayer) => {
-                    featureLayer.bindPopup(
-                        () =>
-                            `<a href="${properties.url}">
+            geoBaseLayer.current.clearLayers();
+
+            if (geo && geo.type && geo.type === 'FeatureCollection' && geo.features.length > 0) {
+                const geoLayer = window.L.geoJSON(geo, {
+                    pointToLayer: (feature, latlng) => {
+                        return window.L.circleMarker(latlng, {
+                            radius: 8,
+                            weight: 5,
+                            color: '#00f',
+                            opacity: 0.2,
+                            fill: true,
+                            fillOpacity: 1,
+                        });
+                    },
+                    style: {
+                        fillOpacity: 0.6,
+                    },
+                    onEachFeature: ({ properties }, featureLayer) => {
+                        featureLayer.bindPopup(
+                            () =>
+                                `<a href="${properties.url}">
                                     ${properties.date}
                                     <br>
                                     ${properties.title}
@@ -107,26 +106,27 @@ export default function GeoJsonMap({ geo }) {
                                             : ''
                                     }
                                  </a>`,
-                        {
-                            autoPan: true,
-                            autoPanPadding: [40, 10],
-                            closeButton: false,
-                            closeOnEscapeKey: true,
-                            closeOnClick: true,
-                            minWidth: 160,
-                            minHeight: 160,
-                        },
-                    );
-                },
-            });
+                            {
+                                autoPan: true,
+                                autoPanPadding: [40, 10],
+                                closeButton: false,
+                                closeOnEscapeKey: true,
+                                closeOnClick: true,
+                                minWidth: 160,
+                                minHeight: 160,
+                            },
+                        );
+                    },
+                });
 
-            geoBaseLayer.current.clearLayers().addLayer(geoLayer);
+                geoBaseLayer.current.addLayer(geoLayer);
 
-            lMap.current.fitBounds(geoLayer.getBounds(), {
-                animate: true,
-                padding: [10, 10],
-                maxZoom: 6,
-            });
+                lMap.current.fitBounds(geoLayer.getBounds(), {
+                    animate: true,
+                    padding: [10, 10],
+                    maxZoom: 6,
+                });
+            }
         }
     }, [geo, geoBaseLayer.current, lMap.current]);
 

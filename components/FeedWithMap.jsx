@@ -38,10 +38,15 @@ export default function FeedWithMap({ url, href, h1, children }) {
     useEffect(() => {
         if (url) {
             setPage(1);
-            fetchJson('./index.json', url).then((obj) =>
-                obj ? setFeed(obj) : setError('Nothing to Show'),
-            );
-            fetchJson('./index.geo.json', url).then((obj) => obj && setGeo(obj));
+            fetchJson('./index.json', url).then((obj) => {
+                if (obj) {
+                    setFeed(obj);
+                } else {
+                    setFeed({});
+                    setError('Nothing to Show');
+                }
+            });
+            fetchJson('./index.geo.json', url).then((obj) => (obj ? setGeo(obj) : setGeo({})));
         }
     }, [url]);
 
