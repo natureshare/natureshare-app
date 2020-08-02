@@ -28,13 +28,8 @@ import Link from '../components/Link';
 import Layout from '../components/Layout';
 import GeoJsonMap from '../components/GeoJsonMap';
 import LicenseLink from '../components/LicenseLink';
+import CommentFormDialog from '../components/item/CommentFormDialog';
 import { resolveUrl, fetchYaml } from '../utils/fetch';
-
-const showOriginalFile = (url) => {
-    if (window && typeof window === 'object') {
-        window.prompt('Copy and paste the following URL:', url.join('/'));
-    }
-};
 
 const dirStr = (i) => i.toLowerCase().replace(/\s/g, '_');
 
@@ -42,6 +37,7 @@ export default function Item() {
     const router = useRouter();
 
     const [id, setId] = useState({});
+    const [username, setUsername] = useState(null);
     const [profileUrl, setProfileUrl] = useState(null);
     const [profile, setProfile] = useState(null);
     const [itemUrl, setItemUrl] = useState(null);
@@ -83,7 +79,13 @@ export default function Item() {
 
             const profilePath = `${url.split('/items/', 1)[0]}/`;
 
-            setProfileUrl(profilePath.replace(process.env.contentHost, './').replace(/\/$/, ''));
+            const _profileUrl = profilePath
+                .replace(process.env.contentHost, './')
+                .replace(/\/$/, '');
+
+            setProfileUrl(_profileUrl);
+
+            setUsername(_last(_profileUrl.split('/')));
 
             fetchYaml('./profile.yaml', profilePath).then((obj) => obj && setProfile(obj));
         }
@@ -108,7 +110,7 @@ export default function Item() {
 
     return (
         <Layout
-            title={(profileUrl && _last(profileUrl.split('/'))) || 'Loading...'}
+            title={username || 'Loading...'}
             href={`/profile?i=${encodeURIComponent(profileUrl)}`}
         >
             <H1>
@@ -151,9 +153,15 @@ export default function Item() {
                                         <CardActions>
                                             <Button
                                                 size="small"
-                                                onClick={() =>
-                                                    showOriginalFile(original.split('/'))
-                                                }
+                                                onClick={() => {
+                                                    if (
+                                                        window.confirm(
+                                                            'File may be very large. Are you sure?',
+                                                        )
+                                                    )
+                                                        window.location = original;
+                                                    return true;
+                                                }}
                                             >
                                                 original file
                                             </Button>
@@ -171,12 +179,7 @@ export default function Item() {
                     {!showMedia && (
                         <Button
                             variant="outlined"
-                            onClick={() =>
-                                window &&
-                                window.confirm &&
-                                window.confirm('Show video?') &&
-                                setShowMedia(true)
-                            }
+                            onClick={() => window.confirm('Show video?') && setShowMedia(true)}
                         >
                             Show Video
                         </Button>
@@ -201,12 +204,7 @@ export default function Item() {
                     {!showMedia && (
                         <Button
                             variant="outlined"
-                            onClick={() =>
-                                window &&
-                                window.confirm &&
-                                window.confirm('Show audio?') &&
-                                setShowMedia(true)
-                            }
+                            onClick={() => window.confirm('Show audio?') && setShowMedia(true)}
                         >
                             Show Audio
                         </Button>
@@ -285,6 +283,7 @@ export default function Item() {
                                     as={`/collection?i=${encodeURIComponent(
                                         relativeUrl(`../../../_index/tags/${dirStr(tag)}`),
                                     )}`}
+                                    style={{ wordBreak: 'break-all' }}
                                 />
                             </Grid>
                         ))}
@@ -307,6 +306,7 @@ export default function Item() {
                                         `../../../_index/collections/${dirStr(name)}/aggregate`,
                                     ),
                                 )}`}
+                                style={{ wordBreak: 'break-all' }}
                             >
                                 <ListItemText primary={name} />
                             </ListItem>
@@ -322,14 +322,19 @@ export default function Item() {
                             ({ created_at: createdAt, username: commentUser, text }, i) => (
                                 <ListItem
                                     key={commentUser + createdAt}
-                                    button
                                     divider={i + 1 !== item.comments.length}
-                                    component={Link}
-                                    href="/profile"
-                                    as={`/profile?i=${encodeURIComponent(`./${commentUser}`)}`}
                                 >
                                     <ListItemText
-                                        primary={commentUser}
+                                        primary={
+                                            <Link
+                                                href="/profile"
+                                                as={`/profile?i=${encodeURIComponent(
+                                                    `./${commentUser}`,
+                                                )}`}
+                                            >
+                                                {commentUser}
+                                            </Link>
+                                        }
                                         secondary={
                                             <>
                                                 <Body2>
@@ -343,6 +348,11 @@ export default function Item() {
                             ),
                         )}
                     </List>
+                    <Box mt={2}>
+                        <CommentFormDialog
+                            data={{ recipient: username, action: 'itemComment', target: itemUrl }}
+                        />
+                    </Box>
                 </Box>
             )}
             {item.latitude && item.longitude && (

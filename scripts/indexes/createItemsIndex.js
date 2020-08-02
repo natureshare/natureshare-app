@@ -122,7 +122,7 @@ const build = (userDir) => {
         const idIndex = {};
         const tagsIndex = {};
 
-        Glob.sync(Path.join('**', '*.yaml'), { cwd: itemsDir }).forEach((f) => {
+        Glob.sync(Path.join('*', '*', '*.yaml'), { cwd: itemsDir }).forEach((f) => {
             const { item, collections } = loadItem(userDir, f);
 
             feedItems.push(item);

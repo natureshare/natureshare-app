@@ -7,6 +7,8 @@ const nextConfig = {
         osmHost: process.env.OSM_HOST || 'a.tile.openstreetmap.org',
         tfApiKey: process.env.TF_API_KEY,
 
+        apiHost: process.env.API_HOST,
+
         contentHost: process.env.CONTENT_HOST || 'https://files.natureshare.org.au/',
         contentHostDev: process.env.CONTENT_HOST_DEV,
 
@@ -17,6 +19,8 @@ const nextConfig = {
 
         githubContentPath: process.env.GH_CONTENT_PATH || 'natureshare/natureshare-files',
         githubSpeciesPath: process.env.GH_SPECIES_PATH || 'natureshare/natureshare-species-wiki',
+
+        passwordSalt: process.env.PASSWORD_SALT || 'ns1234',
     },
     exportTrailingSlash: false,
 };

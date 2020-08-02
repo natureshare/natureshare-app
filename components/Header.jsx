@@ -5,7 +5,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import Box from '@material-ui/core/Box';
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
@@ -13,13 +13,24 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import HomeIcon from 'mdi-material-ui/Home';
+import LogInIcon from 'mdi-material-ui/Login';
+import LogOutIcon from 'mdi-material-ui/Logout';
 import AboutIcon from 'mdi-material-ui/Information';
+import PersonIcon from '@material-ui/icons/Person';
 import ChevronRightIcon from 'mdi-material-ui/ChevronRight';
 import Hidden from '@material-ui/core/Hidden';
 import Link from './Link';
+import LogInFormDialog from './LogInFormDialog';
+import UserFormDialog from './UserFormDialog';
+import { UserContext } from './User';
 
 export default function Header({ title, href }) {
     const [drawerIsOpen, openDrawer] = useState(false);
+    const [openLogInForm, setOpenLogInForm] = useState(false);
+    const [openUserForm, setOpenUserForm] = useState(false);
+    const [openNewUserForm, setOpenNewUserForm] = useState(false);
+
+    const [user, setUser] = useContext(UserContext);
 
     return (
         <>
@@ -85,6 +96,49 @@ export default function Header({ title, href }) {
                             <ListItemText primary="Home" />
                         </ListItem>
                         <Divider />
+                        {process.env.apiHost && (
+                            <>
+                                {user && !user.name && (
+                                    <>
+                                        <ListItem button onClick={() => setOpenLogInForm(true)}>
+                                            <ListItemIcon>
+                                                <LogInIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary="Log In" />
+                                        </ListItem>
+                                        <ListItem button onClick={() => setOpenNewUserForm(true)}>
+                                            <ListItemIcon>
+                                                <PersonIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary="Sign Up" />
+                                        </ListItem>
+                                    </>
+                                )}
+                                {user && user.name && (
+                                    <>
+                                        <ListItem button onClick={() => setOpenUserForm(true)}>
+                                            <ListItemIcon>
+                                                <PersonIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary="Account" />
+                                        </ListItem>
+                                        <ListItem
+                                            button
+                                            onClick={() => {
+                                                window.localStorage.removeItem('userToken');
+                                                setUser({});
+                                            }}
+                                        >
+                                            <ListItemIcon>
+                                                <LogOutIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary="Log Out" />
+                                        </ListItem>
+                                    </>
+                                )}
+                            </>
+                        )}
+                        <Divider />
                         <ListItem button component={Link} href="/about" as="/about">
                             <ListItemIcon>
                                 <AboutIcon />
@@ -94,6 +148,9 @@ export default function Header({ title, href }) {
                     </List>
                 </div>
             </Drawer>
+            <LogInFormDialog open={openLogInForm} setOpen={setOpenLogInForm} />
+            <UserFormDialog open={openUserForm} setOpen={setOpenUserForm} />
+            <UserFormDialog open={openNewUserForm} setOpen={setOpenNewUserForm} newUser />
         </>
     );
 }
