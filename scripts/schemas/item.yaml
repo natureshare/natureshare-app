@@ -100,6 +100,10 @@ properties:
     items:
       type: object
       additionalProperties: false
+      required:
+        - created_at
+        - text
+        - username
       properties:
         created_at:
           type: string

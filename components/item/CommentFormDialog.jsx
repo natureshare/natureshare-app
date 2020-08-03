@@ -12,6 +12,7 @@ export default function CommentFormDialog({ data }) {
 
     const fields = {
         recipient: { type: 'hidden' },
+        url: { type: 'hidden' },
         action: { type: 'hidden' },
         target: { type: 'hidden' },
         comment: {

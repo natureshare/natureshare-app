@@ -40,12 +40,14 @@ export default function Item() {
     const [username, setUsername] = useState(null);
     const [profileUrl, setProfileUrl] = useState(null);
     const [profile, setProfile] = useState(null);
+    const [currentUrl, setCurrentUrl] = useState('');
     const [itemUrl, setItemUrl] = useState(null);
     const [item, setItem] = useState({});
     const [geo, setGeo] = useState(null);
     const [showMedia, setShowMedia] = useState(false);
 
     useEffect(() => {
+        if (typeof window === 'object') setCurrentUrl(window.location.href);
         const { i } = queryString.parse(router.asPath.split(/\?/)[1]);
         const url = resolveUrl(`${i}.yaml`, process.env.contentHost);
 
@@ -314,43 +316,49 @@ export default function Item() {
                     </List>
                 </Box>
             )}
-            {item.comments && item.comments.length > 0 && (
+            {item && (
                 <Box mt={3}>
                     <H3>Discussion</H3>
                     <List disablePadding>
-                        {item.comments.map(
-                            ({ created_at: createdAt, username: commentUser, text }, i) => (
-                                <ListItem
-                                    key={commentUser + createdAt}
-                                    divider={i + 1 !== item.comments.length}
-                                >
-                                    <ListItemText
-                                        primary={
-                                            <Link
-                                                href="/profile"
-                                                as={`/profile?i=${encodeURIComponent(
-                                                    `./${commentUser}`,
-                                                )}`}
-                                            >
-                                                {commentUser}
-                                            </Link>
-                                        }
-                                        secondary={
-                                            <>
-                                                <Body2>
-                                                    {createdAt && createdAt.split('T')[0]}
-                                                </Body2>
-                                                <Body1>&quot;{text}&quot;</Body1>
-                                            </>
-                                        }
-                                    />
-                                </ListItem>
-                            ),
-                        )}
+                        {item.comments &&
+                            item.comments.map(
+                                ({ created_at: createdAt, username: commentUser, text }, i) => (
+                                    <ListItem
+                                        key={commentUser + createdAt}
+                                        divider={i + 1 !== item.comments.length}
+                                    >
+                                        <ListItemText
+                                            primary={
+                                                <Link
+                                                    href="/profile"
+                                                    as={`/profile?i=${encodeURIComponent(
+                                                        `./${commentUser}`,
+                                                    )}`}
+                                                >
+                                                    {commentUser}
+                                                </Link>
+                                            }
+                                            secondary={
+                                                <>
+                                                    <Body2>
+                                                        {createdAt && createdAt.split('T')[0]}
+                                                    </Body2>
+                                                    <Body1>&quot;{text}&quot;</Body1>
+                                                </>
+                                            }
+                                        />
+                                    </ListItem>
+                                ),
+                            )}
                     </List>
                     <Box mt={2}>
                         <CommentFormDialog
-                            data={{ recipient: username, action: 'itemComment', target: itemUrl }}
+                            data={{
+                                recipient: username,
+                                url: currentUrl,
+                                action: 'itemComment',
+                                target: itemUrl,
+                            }}
                         />
                     </Box>
                 </Box>
