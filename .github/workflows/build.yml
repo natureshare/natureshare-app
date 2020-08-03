@@ -27,10 +27,17 @@ jobs:
           APP_NAME: ${{ secrets.APP_NAME }}
           APP_SHORT_NAME: ${{ secrets.APP_SHORT_NAME }}
           APP_HOST: ${{ secrets.APP_HOST }}
+
+          API_HOST: ${{ secrets.API_HOST }}
+          PASSWORD_SALT: ${{ secrets.PASSWORD_SALT }}
+            
           OSM_HOST: ${{ secrets.OSM_HOST }}
           TF_API_KEY: ${{ secrets.TF_API_KEY }}
+            
           CONTENT_HOST: ${{ secrets.CONTENT_HOST }}
           SPECIES_HOST: ${{ secrets.SPECIES_HOST }}
+          EXTERNAL_HOSTS: ${{ secrets.EXTERNAL_HOSTS }}
+            
           GH_CONTENT_PATH: ${{ secrets.GH_CONTENT_PATH }}  
           GH_SPECIES_PATH: ${{ secrets.GH_SPECIES_PATH }}  
 
