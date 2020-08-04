@@ -7,7 +7,6 @@ import dotenv from 'dotenv';
 import FS from 'fs';
 import jsonfeedToRSS from 'jsonfeed-to-rss';
 import jsonfeedToAtom from 'jsonfeed-to-atom';
-import _startCase from 'lodash/startCase.js';
 import _sortBy from 'lodash/sortBy.js';
 import _reverse from 'lodash/reverse.js';
 import _range from 'lodash/range.js';
@@ -16,7 +15,6 @@ import omitNull from './omitNull.js';
 dotenv.config();
 
 const cwd = process.env.CONTENT_FILE_PATH;
-const appName = process.env.APP_NAME || 'NatureShare';
 const appHost = process.env.APP_HOST || 'https://natureshare.org.au';
 const contentHost = process.env.CONTENT_HOST;
 
@@ -112,14 +110,14 @@ export const writeFiles = ({
         FS.writeFileSync(
             Path.join(cwd, fileDir, `${fileName}.rss.xml`),
             jsonfeedToRSS(feed, {
-                feedURLFn: (feedURL, jf) => feedURL.replace(/\.json\b/, '.rss.xml'),
+                feedURLFn: (feedURL) => feedURL.replace(/\.json\b/, '.rss.xml'),
             }),
         );
 
         FS.writeFileSync(
             Path.join(cwd, fileDir, `${fileName}.atom.xml`),
             jsonfeedToAtom(feed, {
-                feedURLFn: (feedURL, jf) => feedURL.replace(/\.json\b/, '.atom.xml'),
+                feedURLFn: (feedURL) => feedURL.replace(/\.json\b/, '.atom.xml'),
             }),
         );
     });

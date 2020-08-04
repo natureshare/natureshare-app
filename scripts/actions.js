@@ -1,18 +1,14 @@
 /* global process URL */
 
 import path from 'path';
-import glob from 'glob';
 import fs from 'fs';
 import dotenv from 'dotenv';
-import crypto from 'crypto';
 import fetch from 'isomorphic-unfetch';
 import yaml from 'js-yaml';
 import _sortBy from 'lodash/sortBy.js';
 import _last from 'lodash/last.js';
 import _uniq from 'lodash/uniq.js';
 import jsonschema from 'jsonschema';
-import jsonfeedToRSS from 'jsonfeed-to-rss';
-import jsonfeedToAtom from 'jsonfeed-to-atom';
 import mkdirp from 'mkdirp';
 import _mapValues from 'lodash/mapValues.js';
 
@@ -54,7 +50,7 @@ const actions = {
     itemComment: ({ id, date_published: date, author, _meta: meta, content_text: yamlText }) => {
         const { comment } = yaml.safeLoad(yamlText);
         const { name: sender } = author;
-        const { recipient, target } = meta;
+        const { target } = meta;
         if (comment) {
             const targetFile = path.join(cwd, new URL(target).pathname);
             if (fs.existsSync(targetFile)) {
@@ -72,13 +68,7 @@ const actions = {
         }
     },
 
-    itemToCollection: ({
-        id,
-        date_published: date,
-        author,
-        _meta: meta,
-        content_text: yamlText,
-    }) => {
+    itemToCollection: ({ author, _meta: meta, content_text: yamlText }) => {
         const { collection: name } = yaml.safeLoad(yamlText);
         const { name: sender } = author;
         const { target } = meta;
@@ -115,22 +105,6 @@ const run = async () => {
         feed.feed_url = new URL(path.join('.', 'actions.json'), contentHost).href;
 
         validator.validate(feed, feedSchema);
-
-        // fs.writeFileSync(path.join(cwd, 'updates.json'), JSON.stringify(feed, null, 1));
-
-        // fs.writeFileSync(
-        //     path.join(cwd, 'updates.rss.xml'),
-        //     jsonfeedToRSS(feed, {
-        //         feedURLFn: (feedURL, jf) => feedURL.replace(/\.json\b/, '.rss.xml'),
-        //     }),
-        // );
-
-        // fs.writeFileSync(
-        //     path.join(cwd, 'updates.atom.xml'),
-        //     jsonfeedToAtom(feed, {
-        //         feedURLFn: (feedURL, jf) => feedURL.replace(/\.json\b/, '.atom.xml'),
-        //     }),
-        // );
 
         if (feed.items.length === 0) {
             console.log('No updates.');

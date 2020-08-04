@@ -3,7 +3,6 @@
 import Path from 'path';
 import Glob from 'glob';
 import FS from 'fs';
-import MkDir from 'mkdirp';
 import YAML from 'js-yaml';
 import dotenv from 'dotenv';
 import _startCase from 'lodash/startCase.js';
@@ -19,7 +18,6 @@ import { writeFiles, writeFilesForEach, writeFilesIndex } from './utils/writeFil
 dotenv.config();
 
 const cwd = process.env.CONTENT_FILE_PATH;
-const appName = process.env.APP_NAME || 'NatureShare';
 const appHost = process.env.APP_HOST || 'https://natureshare.org.au/';
 const contentHost = process.env.CONTENT_HOST || 'https://files.natureshare.org.au/';
 
