@@ -10,7 +10,6 @@ import Button from '@material-ui/core/Button';
 import Box from '@material-ui/core/Box';
 import TextField from '@material-ui/core/TextField';
 import humanize from 'underscore.string/humanize';
-import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -18,6 +17,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { createHash } from 'crypto';
+import DialogActions from '@material-ui/core/DialogActions';
 import { FeedbackContext } from './Feedback';
 
 export default function FormDialog({
@@ -38,6 +38,7 @@ export default function FormDialog({
     const [active, setActive] = useState(false);
     const [, setFeedback] = useContext(FeedbackContext);
     const [errors, setErrors] = useState({});
+    const [openErrorsDialog, setOpenErrorsDialog] = useState(false);
     const mapMarker = useRef();
 
     const getFieldValues = (obj) =>
@@ -50,6 +51,7 @@ export default function FormDialog({
         if (open) {
             updateData(getFieldValues(source));
             setErrors({});
+            setOpenErrorsDialog(false);
             setActive(false);
         }
     }, [open]);
@@ -150,107 +152,122 @@ export default function FormDialog({
     };
 
     const save = () => {
-        setActive(true);
-        setErrors({});
-        const token =
-            (window && window.localStorage && window.localStorage.getItem('userToken')) || '-';
-        /* eslint-disable camelcase */
-        const { password, password_confirmation } = data;
-        const bodyData =
-            password || password_confirmation
-                ? {
-                      ...data,
-                      password: password ? passwordDigest(password) : null,
-                      password_confirmation: password_confirmation
-                          ? passwordDigest(password_confirmation)
-                          : null,
-                  }
-                : { ...data };
-        /* eslint-enable camelcase */
-        window
-            .fetch(new URL(url, process.env.apiHost).href, {
-                method: method || 'POST',
-                mode: 'cors',
-                cache: 'no-cache',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    utf8: '✓',
-                    ...(namespace
-                        ? {
-                              [namespace]: bodyData,
-                          }
-                        : bodyData),
-                }),
-            })
-            .then((response) => {
-                response
-                    .json()
-                    .then((body) => {
-                        setActive(false);
-                        if (response.ok) {
-                            setOpen(false);
-                            setFeedback({ ok: true, msg: (body && body.message) || 'Success.' });
-                            if (setSource) {
-                                setSource({
-                                    ...source,
-                                    ...data,
+        if (!active) {
+            setActive(true);
+            const token =
+                (window && window.localStorage && window.localStorage.getItem('userToken')) || '-';
+            /* eslint-disable camelcase */
+            const { password, password_confirmation } = data;
+            const bodyData =
+                password || password_confirmation
+                    ? {
+                          ...data,
+                          password: password ? passwordDigest(password) : null,
+                          password_confirmation: password_confirmation
+                              ? passwordDigest(password_confirmation)
+                              : null,
+                      }
+                    : { ...data };
+            /* eslint-enable camelcase */
+            setTimeout(
+                () =>
+                    window
+                        .fetch(new URL(url, process.env.apiHost).href, {
+                            method: method || 'POST',
+                            mode: 'cors',
+                            cache: 'no-cache',
+                            credentials: 'include',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({
+                                utf8: '✓',
+                                ...(namespace
+                                    ? {
+                                          [namespace]: bodyData,
+                                      }
+                                    : bodyData),
+                            }),
+                        })
+                        .then((response) => {
+                            response
+                                .json()
+                                .then((body) => {
+                                    setActive(false);
+                                    if (response.ok) {
+                                        setOpen(false);
+                                        setFeedback({
+                                            ok: true,
+                                            msg: (body && body.message) || 'Success.',
+                                        });
+                                        if (setSource) {
+                                            setSource({
+                                                ...source,
+                                                ...data,
+                                            });
+                                        }
+                                        if (onSave) {
+                                            onSave({ data, body });
+                                        }
+                                    } else {
+                                        setFeedback({ ok: false, msg: 'Not saved!' });
+                                        setErrors(body.errors || {});
+                                        setOpenErrorsDialog(true);
+                                    }
+                                })
+                                .catch(() => {
+                                    setActive(false);
+                                    setFeedback({ ok: false, msg: 'Response error!' });
                                 });
-                            }
-                            if (onSave) {
-                                onSave({ data, body });
-                            }
-                        } else {
-                            setFeedback({ ok: false, msg: 'Not saved!' });
-                            setErrors(body.errors || {});
-                        }
-                    })
-                    .catch(() => {
-                        setActive(false);
-                        setFeedback({ ok: false, msg: 'Response error!' });
-                    });
-            })
-            .catch(() => {
-                setActive(false);
-                setFeedback({ ok: false, msg: 'Request failed!' });
-            });
+                        })
+                        .catch(() => {
+                            setActive(false);
+                            setFeedback({ ok: false, msg: 'Request failed!' });
+                        }),
+                500,
+            );
+        }
     };
 
-    const WhiteCircularProgress = withStyles({
+    const BlackCircularProgress = withStyles({
         root: {
-            color: '#FFF',
+            color: '#000',
         },
     })(CircularProgress);
 
     return (
         <>
             <Dialog
+                open={errors && Object.keys(errors).length !== 0 && openErrorsDialog}
+                onClose={() => setOpenErrorsDialog(false)}
+                fullWidth
+                maxWidth="sm"
+            >
+                <DialogTitle>Please Review</DialogTitle>
+                <DialogContent>
+                    {Object.keys(errors).map((k) => (
+                        <Typography variant="body1">
+                            <strong>{k}:</strong> {errors[k].join(', ')}
+                        </Typography>
+                    ))}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenErrorsDialog(false)} autoFocus>
+                        Ok
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
                 disableBackdropClick
                 disableEscapeKeyDown
-                open={open && !active}
+                open={open}
                 onClose={() => setOpen(false)}
                 fullWidth
                 maxWidth="sm"
             >
                 <DialogTitle>{title}</DialogTitle>
                 <DialogContent>
-                    {errors && Object.keys(errors).length > 0 && (
-                        <Box mb={3}>
-                            <Typography variant="body2">
-                                Please review and correct these fields:
-                                <ul>
-                                    {Object.keys(errors).map((k) => (
-                                        <li>
-                                            {k}: {errors[k].join(', ')}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </Typography>
-                        </Box>
-                    )}
                     {description && (
                         <Box mb={3}>
                             <Typography variant="body2">{description}</Typography>
@@ -326,13 +343,12 @@ export default function FormDialog({
                         ))}
                     <Box mb={3} style={{ textAlign: 'right' }}>
                         <Button onClick={cancel}>Cancel</Button>{' '}
-                        <Button onClick={save}>{saveButtonText}</Button>
+                        <Button onClick={save}>
+                            {(active && <BlackCircularProgress size={20} />) || saveButtonText}
+                        </Button>
                     </Box>
                 </DialogContent>
             </Dialog>
-            <Backdrop open={active} style={{ zIndex: 1 }}>
-                <WhiteCircularProgress />
-            </Backdrop>
         </>
     );
 }

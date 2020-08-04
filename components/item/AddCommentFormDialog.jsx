@@ -6,7 +6,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import { UserContext } from '../User';
 import FormDialog from '../FormDialog';
 
-export default function CommentFormDialog({ data }) {
+export default function AddCommentFormDialog({ data }) {
     const [user] = useContext(UserContext);
     const [open, setOpen] = useState(false);
 
@@ -25,14 +25,14 @@ export default function CommentFormDialog({ data }) {
 
     return (
         <>
-            <Button color="primary" variant="outlined" onClick={() => setOpen(true)}>
+            <Button size="small" color="primary" variant="outlined" onClick={() => setOpen(true)}>
                 Add a Comment
             </Button>
             {user && user.name && (
                 <FormDialog
                     open={open}
                     setOpen={setOpen}
-                    title="Comment"
+                    title="Add a Comment"
                     source={data}
                     fields={fields}
                     method="POST"

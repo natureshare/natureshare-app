@@ -28,7 +28,8 @@ import Link from '../components/Link';
 import Layout from '../components/Layout';
 import GeoJsonMap from '../components/GeoJsonMap';
 import LicenseLink from '../components/LicenseLink';
-import CommentFormDialog from '../components/item/CommentFormDialog';
+import AddCommentFormDialog from '../components/item/AddCommentFormDialog';
+import AddToCollectionFormDialog from '../components/item/AddToCollectionFormDialog';
 import { resolveUrl, fetchYaml } from '../utils/fetch';
 
 const dirStr = (i) => i.toLowerCase().replace(/\s/g, '_');
@@ -42,7 +43,7 @@ export default function Item() {
     const [profile, setProfile] = useState(null);
     const [currentUrl, setCurrentUrl] = useState('');
     const [itemUrl, setItemUrl] = useState(null);
-    const [item, setItem] = useState({});
+    const [item, setItem] = useState(null);
     const [geo, setGeo] = useState(null);
     const [showMedia, setShowMedia] = useState(false);
 
@@ -116,7 +117,7 @@ export default function Item() {
             href={`/profile?i=${encodeURIComponent(profileUrl)}`}
         >
             <H1>
-                {(item.datetime && item.datetime.replace('T', ' ').replace('Z', '')) ||
+                {(item && item.datetime && item.datetime.replace('T', ' ').replace('Z', '')) ||
                     'Loading...'}
             </H1>
             <H2>
@@ -125,7 +126,7 @@ export default function Item() {
                     (profileUrl && _last(profileUrl.split('/'))) ||
                     'Loading...'}
             </H2>
-            {item.photos && item.photos.length > 0 && (
+            {item && item.photos && item.photos.length > 0 && (
                 <Box mt={3}>
                     <Grid
                         container
@@ -175,7 +176,7 @@ export default function Item() {
                     </Grid>
                 </Box>
             )}
-            {item.videos && item.videos.length > 0 && (
+            {item && item.videos && item.videos.length > 0 && (
                 <Box mt={3}>
                     <H3>Video</H3>
                     {!showMedia && (
@@ -200,7 +201,7 @@ export default function Item() {
                         ))}
                 </Box>
             )}
-            {item.audio && item.audio.length > 0 && (
+            {item && item.audio && item.audio.length > 0 && (
                 <Box mt={3}>
                     <H3>Audio</H3>
                     {!showMedia && (
@@ -219,13 +220,13 @@ export default function Item() {
                         ))}
                 </Box>
             )}
-            {item.description && item.description.length > 0 && (
+            {item && item.description && item.description.length > 0 && (
                 <Box mt={3}>
                     <H3>Description</H3>
                     <P>{item.description}</P>
                 </Box>
             )}
-            {item.id && item.id.length > 0 && (
+            {item && item.id && item.id.length > 0 && (
                 <Box mt={3}>
                     <H3>Identification</H3>
                     <List disablePadding>
@@ -264,7 +265,7 @@ export default function Item() {
                     </List>
                 </Box>
             )}
-            {item.tags && item.tags.length > 0 && (
+            {item && item.tags && item.tags.length > 0 && (
                 <Box mt={3}>
                     <H3>Tags</H3>
                     <Grid
@@ -292,36 +293,54 @@ export default function Item() {
                     </Grid>
                 </Box>
             )}
-            {item.collections && item.collections.length > 0 && (
+            {item && (
                 <Box mt={3}>
                     <H3>Collections</H3>
-                    <List disablePadding>
-                        {item.collections.map((name, i) => (
-                            <ListItem
-                                key={name}
-                                button
-                                divider={i + 1 !== item.collections.length}
-                                component={Link}
-                                href="/collection"
-                                as={`/collection?i=${encodeURIComponent(
-                                    relativeUrl(
-                                        `../../../_index/collections/${dirStr(name)}/aggregate`,
-                                    ),
-                                )}`}
-                                style={{ wordBreak: 'break-all' }}
-                            >
-                                <ListItemText primary={name} />
-                            </ListItem>
-                        ))}
-                    </List>
+                    {item.collections && item.collections.length > 0 && (
+                        <List disablePadding>
+                            {item.collections.map((name, i) => (
+                                <ListItem
+                                    key={name}
+                                    button
+                                    divider={i + 1 !== item.collections.length}
+                                    component={Link}
+                                    href="/collection"
+                                    as={`/collection?i=${encodeURIComponent(
+                                        relativeUrl(
+                                            `../../../_index/collections/${dirStr(name)}/aggregate`,
+                                        ),
+                                    )}`}
+                                    style={{ wordBreak: 'break-all' }}
+                                >
+                                    <ListItemText primary={name} />
+                                </ListItem>
+                            ))}
+                        </List>
+                    )}
+                    <Box mt={2}>
+                        <AddToCollectionFormDialog
+                            data={{
+                                url: currentUrl,
+                                action: 'itemToCollection',
+                                target: itemUrl,
+                            }}
+                        />
+                    </Box>
+                </Box>
+            )}
+            {item && item.latitude && item.longitude && (
+                <Box mt={3}>
+                    <H3>Location</H3>
+                    {item.location_name && <P>{item.location_name}</P>}
+                    <GeoJsonMap geo={geo} />
                 </Box>
             )}
             {item && (
                 <Box mt={3}>
                     <H3>Discussion</H3>
-                    <List disablePadding>
-                        {item.comments &&
-                            item.comments.map(
+                    {item.comments && item.comments.length !== 0 && (
+                        <List disablePadding>
+                            {item.comments.map(
                                 ({ created_at: createdAt, username: commentUser, text }, i) => (
                                     <ListItem
                                         key={commentUser + createdAt}
@@ -350,9 +369,10 @@ export default function Item() {
                                     </ListItem>
                                 ),
                             )}
-                    </List>
+                        </List>
+                    )}
                     <Box mt={2}>
-                        <CommentFormDialog
+                        <AddCommentFormDialog
                             data={{
                                 recipient: username,
                                 url: currentUrl,
@@ -363,108 +383,107 @@ export default function Item() {
                     </Box>
                 </Box>
             )}
-            {item.latitude && item.longitude && (
+            {item && (
                 <Box mt={3}>
-                    <H3>Location</H3>
-                    {item.location_name && <P>{item.location_name}</P>}
-                    <GeoJsonMap geo={geo} />
-                </Box>
-            )}
-            <Box mt={3}>
-                <H3>Meta</H3>
-                <TableContainer component={Paper}>
-                    <Table size="small">
-                        <TableBody>
-                            {item.datetime && (
-                                <TableRow>
-                                    <TableCell component="th">Observation</TableCell>
-                                    <TableCell>{`${item.datetime}`.replace('T', ' ')}</TableCell>
-                                </TableRow>
-                            )}
-                            {item.photos && item.photos.length > 0 && (
-                                <>
+                    <H3>Meta</H3>
+                    <TableContainer component={Paper}>
+                        <Table size="small">
+                            <TableBody>
+                                {item.datetime && (
                                     <TableRow>
-                                        <TableCell component="th">Date-Time From Camera</TableCell>
+                                        <TableCell component="th">Observation</TableCell>
                                         <TableCell>
-                                            {item.photo_datetime_used ? 'Yes' : 'No'}
+                                            {`${item.datetime}`.replace('T', ' ')}
                                         </TableCell>
                                     </TableRow>
-                                    {item.non_identifying_photo && (
+                                )}
+                                {item.photos && item.photos.length > 0 && (
+                                    <>
                                         <TableRow>
                                             <TableCell component="th">
-                                                Non-Identifying Photo
+                                                Date-Time From Camera
                                             </TableCell>
-                                            <TableCell>Yes</TableCell>
+                                            <TableCell>
+                                                {item.photo_datetime_used ? 'Yes' : 'No'}
+                                            </TableCell>
                                         </TableRow>
-                                    )}
-                                    {item.photo_quality && (
-                                        <TableRow>
-                                            <TableCell component="th">Photo Quality</TableCell>
-                                            <TableCell>{item.photo_quality}</TableCell>
-                                        </TableRow>
-                                    )}
-                                </>
-                            )}
-                            {item.latitude && item.longitude && (
-                                <>
-                                    <TableRow>
-                                        <TableCell component="th">Location</TableCell>
-                                        <TableCell>
-                                            {parseFloat(item.latitude).toFixed(6)},{' '}
-                                            {parseFloat(item.longitude).toFixed(6)}
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell component="th">Photo Geo-Tag Used</TableCell>
-                                        <TableCell>
-                                            {item.photo_geotag_used ? 'Yes' : 'No'}
-                                        </TableCell>
-                                    </TableRow>
-                                </>
-                            )}
-                            <TableRow>
-                                <TableCell component="th">Created</TableCell>
-                                <TableCell>
-                                    {item.created_at && item.created_at.split('T')[0]}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell component="th">Updated</TableCell>
-                                <TableCell>
-                                    {item.updated_at && item.updated_at.split('T')[0]}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell component="th">Photo(s) License</TableCell>
-                                <TableCell>
-                                    <LicenseLink license={item.license} />
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell component="th">Document License</TableCell>
-                                <TableCell>
-                                    <LicenseLink license={item.license} />
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell component="th">External</TableCell>
-                                <TableCell>
-                                    <ButtonGroup size="small">
-                                        <Button href={itemUrl} target="_blank">
-                                            YAML
-                                        </Button>
-                                        {githubUrl && (
-                                            <Button href={githubUrl} target="_blank">
-                                                GitHub
-                                            </Button>
+                                        {item.non_identifying_photo && (
+                                            <TableRow>
+                                                <TableCell component="th">
+                                                    Non-Identifying Photo
+                                                </TableCell>
+                                                <TableCell>Yes</TableCell>
+                                            </TableRow>
                                         )}
-                                    </ButtonGroup>
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Box>
+                                        {item.photo_quality && (
+                                            <TableRow>
+                                                <TableCell component="th">Photo Quality</TableCell>
+                                                <TableCell>{item.photo_quality}</TableCell>
+                                            </TableRow>
+                                        )}
+                                    </>
+                                )}
+                                {item.latitude && item.longitude && (
+                                    <>
+                                        <TableRow>
+                                            <TableCell component="th">Location</TableCell>
+                                            <TableCell>
+                                                {parseFloat(item.latitude).toFixed(6)},{' '}
+                                                {parseFloat(item.longitude).toFixed(6)}
+                                            </TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell component="th">Photo Geo-Tag Used</TableCell>
+                                            <TableCell>
+                                                {item.photo_geotag_used ? 'Yes' : 'No'}
+                                            </TableCell>
+                                        </TableRow>
+                                    </>
+                                )}
+                                <TableRow>
+                                    <TableCell component="th">Created</TableCell>
+                                    <TableCell>
+                                        {item.created_at && item.created_at.split('T')[0]}
+                                    </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell component="th">Updated</TableCell>
+                                    <TableCell>
+                                        {item.updated_at && item.updated_at.split('T')[0]}
+                                    </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell component="th">Photo(s) License</TableCell>
+                                    <TableCell>
+                                        <LicenseLink license={item.license} />
+                                    </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell component="th">Document License</TableCell>
+                                    <TableCell>
+                                        <LicenseLink license={item.license} />
+                                    </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell component="th">External</TableCell>
+                                    <TableCell>
+                                        <ButtonGroup size="small">
+                                            <Button href={itemUrl} target="_blank">
+                                                YAML
+                                            </Button>
+                                            {githubUrl && (
+                                                <Button href={githubUrl} target="_blank">
+                                                    GitHub
+                                                </Button>
+                                            )}
+                                        </ButtonGroup>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
+            )}
         </Layout>
     );
 }
