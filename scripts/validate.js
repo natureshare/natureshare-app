@@ -26,6 +26,8 @@ const schemas = _mapValues(
         YAML.safeLoad(FS.readFileSync(Path.join('.', 'scripts', 'schemas', `${v || k}.yaml`))),
 );
 
+let fail = false;
+
 const validate = (cwd, f, schema) => {
     const result = validator.validate(YAML.safeLoad(FS.readFileSync(Path.join(cwd, f))), schema, {
         throwError: false,
@@ -36,14 +38,14 @@ const validate = (cwd, f, schema) => {
             console.log('   ', '-->', e.stack.replace(/^instance\s+/, '')),
         );
         console.log('');
-        // throw new Error('Failed validation!');
+        fail = true;
     }
 };
 
 [
     [contentPath, ['*', 'profile.yaml'], schemas.profile],
     [contentPath, ['*', 'collections', '*.yaml'], schemas.collection],
-    [contentPath, ['*', 'items', '**', '*.yaml'], schemas.item],
+    [contentPath, ['*', 'items', '*', '*', '*.yaml'], schemas.item],
     [speciesPath, ['*', '*', '*.yaml'], schemas.species],
 ]
     .filter((i) => Boolean(i[0]))
@@ -53,3 +55,5 @@ const validate = (cwd, f, schema) => {
             validate(cwd, f, schema);
         });
     });
+
+if (fail) throw new Error('Failed validation!');

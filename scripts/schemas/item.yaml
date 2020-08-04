@@ -102,8 +102,8 @@ properties:
       additionalProperties: false
       required:
         - created_at
-        - text
-        - username
+        # - text
+        # - username
       properties:
         created_at:
           type: string
