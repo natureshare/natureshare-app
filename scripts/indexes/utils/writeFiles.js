@@ -76,18 +76,9 @@ export const writeFiles = ({
         new URL(Path.join('.', userDir), contentHost).href,
     )}`;
 
-    const feedItemsSorted = _reverse(
-        _sortBy(feedItems, [
-            (i) => (i._meta && i._meta.featured ? 1 : 0),
-            'date_published',
-            '_meta.itemCount',
-            'date_modified',
-        ]),
-    );
-
     MkDir.sync(Path.join(cwd, fileDir));
 
-    _range(1, Math.ceil(feedItemsSorted.length / PER_PAGE) + 1).forEach((page) => {
+    _range(1, Math.ceil(feedItems.length / PER_PAGE) + 1).forEach((page) => {
         const fileName = `index${page === 1 ? '' : `_${page}`}`;
 
         const feed = {
@@ -101,7 +92,7 @@ export const writeFiles = ({
             home_page_url: _homePageUrl || homePageUrl,
             feed_url: feedUrl,
             next_url: new URL(Path.join('.', fileDir, `index_${page + 1}.json`), contentHost).href,
-            items: feedItemsSorted.slice((page - 1) * PER_PAGE, page * PER_PAGE),
+            items: feedItems.slice((page - 1) * PER_PAGE, page * PER_PAGE),
             _meta: {
                 itemCount: feedItems.length,
                 pageNumber: page,
@@ -172,27 +163,40 @@ export const writeFilesForEach = ({ index, userDir, subDirCb, appView, titleCb, 
         });
     });
 
-export const writeFilesIndex = ({ index, userDir, subDir, appView, _title, metaCb }) =>
+export const writeFilesIndex = ({ index, userDir, subDir, appView, _title, metaCb }) => {
+    const feedItems = _reverse(
+        _sortBy(
+            Object.keys(index).map((i) => {
+                const { _meta, ...mixin } = metaCb ? metaCb(i) : {};
+                return omitNull({
+                    title: i.replace(/_/g, ' '),
+                    content_text: `${index[i].length} items`,
+                    image: getFirst(index[i], 'image'),
+                    date_published: getFirst(index[i], 'date_published'),
+                    date_modified: getFirst(index[i], 'date_published'),
+                    _meta: {
+                        itemCount: index[i].length,
+                        date: (getFirst(index[i], 'date_published') || '').split('T', 1)[0],
+                        coordinates: averageCoord(index[i]),
+                        ...(_meta || {}),
+                    },
+                    ...mixin,
+                });
+            }),
+            [
+                (i) => (i._meta && i._meta.featured ? 1 : 0),
+                'date_published',
+                '_meta.itemCount',
+                'date_modified',
+            ],
+        ),
+    );
+
     writeFiles({
         userDir,
         subDir,
         appView,
         _title,
-        feedItems: Object.keys(index).map((i) => {
-            const { _meta, ...mixin } = metaCb ? metaCb(i) : {};
-            return omitNull({
-                title: i.replace(/_/g, ' '),
-                content_text: `${index[i].length} items`,
-                image: getFirst(index[i], 'image'),
-                date_published: getFirst(index[i], 'date_published'),
-                date_modified: getFirst(index[i], 'date_published'),
-                _meta: {
-                    itemCount: index[i].length,
-                    date: getFirst(index[i], 'date_published').split('T', 1)[0],
-                    coordinates: averageCoord(index[i]),
-                    ...(_meta || {}),
-                },
-                ...mixin,
-            });
-        }),
+        feedItems,
     });
+};

@@ -8,8 +8,11 @@ import YAML from 'js-yaml';
 import dotenv from 'dotenv';
 import _startCase from 'lodash/startCase.js';
 import _uniq from 'lodash/uniq.js';
+import _uniqBy from 'lodash/uniqBy.js';
 import _mapValues from 'lodash/mapValues.js';
 import _isArray from 'lodash/isArray.js';
+import _sortBy from 'lodash/sortBy.js';
+import _reverse from 'lodash/reverse.js';
 import omitNull from './utils/omitNull.js';
 import { writeFiles, writeFilesForEach, writeFilesIndex } from './utils/writeFiles.js';
 
@@ -111,16 +114,47 @@ const identificationsSubDir = (i) =>
             .replace(/[.'"`]/g, ''),
     );
 
+const sortFeedItems = (items) =>
+    _reverse(
+        _sortBy(items, [
+            (i) => (i._meta && i._meta.featured ? 1 : 0),
+            'date_published',
+            'date_modified',
+        ]),
+    );
+
 const build = (userDir) => {
     console.log(userDir);
 
     const itemsDir = Path.join(cwd, userDir, 'items');
+    const collectionsDir = Path.join(cwd, userDir, 'collections');
 
     if (FS.existsSync(itemsDir)) {
         const feedItems = [];
         const collectionsIndex = {};
         const idIndex = {};
         const tagsIndex = {};
+
+        Glob.sync(Path.join('*.yaml'), { cwd: collectionsDir }).forEach((f) => {
+            const name = f.replace(/\.yaml$/, '');
+
+            const meta = YAML.safeLoad(FS.readFileSync(Path.join(collectionsDir, f)));
+
+            collectionsIndex[name] = {
+                title: meta.title || _startCase(name),
+                description: (meta.description || '').slice(0, 1000),
+                latitude: meta.latitude,
+                longitude: meta.longitude,
+                featured: meta.featured,
+                extraItems: _uniq(meta.extra_items || []),
+                members: _uniq((meta.admins || []).concat(meta.members || [])).filter(
+                    (m) => m !== userDir,
+                ),
+                items: [],
+                idIndex: {},
+                tagsIndex: {},
+            };
+        });
 
         Glob.sync(Path.join('*', '*', '*.yaml'), { cwd: itemsDir }).forEach((f) => {
             const { item, collections } = loadItem(userDir, f);
@@ -138,23 +172,10 @@ const build = (userDir) => {
             if (collections) {
                 collections.forEach((i) => {
                     if (collectionsIndex[i] === undefined) {
-                        const collectionPath = Path.join(cwd, userDir, 'collections', `${i}.yaml`);
-
-                        const meta = FS.existsSync(collectionPath)
-                            ? YAML.safeLoad(FS.readFileSync(collectionPath))
-                            : {};
-
                         collectionsIndex[i] = {
-                            title: meta.title || _startCase(i),
-                            description: (meta.description || '').slice(0, 1000),
-                            image: meta.thumbnail_url, // todo
-                            latitude: meta.latitude,
-                            longitude: meta.longitude,
-                            featured: meta.featured,
-                            extraItems: _uniq(meta.extra_items || []),
-                            members: _uniq((meta.admins || []).concat(meta.members || [])).filter(
-                                (m) => m !== userDir,
-                            ),
+                            title: _startCase(i),
+                            extraItems: [],
+                            members: [],
                             items: [],
                             idIndex: {},
                             tagsIndex: {},
@@ -193,63 +214,67 @@ const build = (userDir) => {
             subDir: 'items',
             appView: 'items',
             _title: 'Items',
-            feedItems,
+            feedItems: sortFeedItems(feedItems),
         });
 
         // Identifications:
 
-        writeFilesForEach({
-            index: idIndex,
-            userDir,
-            subDirCb: identificationsSubDir,
-            appView: 'id',
-        });
+        ((index) => {
+            writeFilesForEach({
+                index,
+                userDir,
+                subDirCb: identificationsSubDir,
+                appView: 'id',
+            });
 
-        writeFilesIndex({
-            index: idIndex,
-            userDir,
-            subDir: 'ids',
-            appView: 'ids',
-            _title: 'Identifications',
-            metaCb: (i) => {
-                const filePath = Path.join(userDir, '_index', identificationsSubDir(i));
-                const id = new URL(Path.join('.', filePath), contentHost).href;
-                return {
-                    id,
-                    url: `${appHost}id?i=${encodeURIComponent(id)}`,
-                };
-            },
-        });
+            writeFilesIndex({
+                index,
+                userDir,
+                subDir: 'ids',
+                appView: 'ids',
+                _title: 'Identifications',
+                metaCb: (i) => {
+                    const filePath = Path.join(userDir, '_index', identificationsSubDir(i));
+                    const id = new URL(Path.join('.', filePath), contentHost).href;
+                    return {
+                        id,
+                        url: `${appHost}id?i=${encodeURIComponent(id)}`,
+                    };
+                },
+            });
+        })(_mapValues(idIndex, sortFeedItems));
 
         // Tags:
 
-        writeFilesForEach({
-            index: tagsIndex,
-            userDir,
-            subDirCb: (i) => Path.join('tags', dirStr(i)),
-            appView: 'tag',
-        });
+        ((index) => {
+            writeFilesForEach({
+                index,
+                userDir,
+                subDirCb: (i) => Path.join('tags', dirStr(i)),
+                appView: 'tag',
+            });
 
-        writeFilesIndex({
-            index: tagsIndex,
-            userDir,
-            subDir: 'tags',
-            appView: 'tags',
-            _title: 'Tags',
-            metaCb: (i) => {
-                const filePath = Path.join(userDir, '_index', 'tags', dirStr(i));
-                const id = new URL(Path.join('.', filePath), contentHost).href;
-                return {
-                    id,
-                    url: `${appHost}tag?i=${encodeURIComponent(id)}`,
-                };
-            },
-        });
+            writeFilesIndex({
+                index,
+                userDir,
+                subDir: 'tags',
+                appView: 'tags',
+                _title: 'Tags',
+                metaCb: (i) => {
+                    const filePath = Path.join(userDir, '_index', 'tags', dirStr(i));
+                    const id = new URL(Path.join('.', filePath), contentHost).href;
+                    return {
+                        id,
+                        url: `${appHost}tag?i=${encodeURIComponent(id)}`,
+                    };
+                },
+            });
+        })(_mapValues(tagsIndex, sortFeedItems));
 
         // User's collection items, one file for each collection:
 
         writeFilesForEach({
-            index: _mapValues(collectionsIndex, 'items'),
+            index: _mapValues(collectionsIndex, (i) => sortFeedItems(i.items)),
             userDir,
             subDirCb: (i) => Path.join('collections', dirStr(i)),
             appView: 'collection',
@@ -264,23 +289,21 @@ const build = (userDir) => {
 
             collectionsIndex[c].extraItems.forEach((e) => {
                 const [u, , ...f] = e.split(Path.sep);
-                if (u !== userDir) {
-                    const { item } = loadItem(u, `${Path.join(...f)}.yaml`);
+                const { item } = loadItem(u, `${Path.join(...f)}.yaml`);
 
-                    item.author = {
-                        name: u,
-                        url: userUrl(u),
-                    };
+                item.author = {
+                    name: u,
+                    url: userUrl(u),
+                };
 
-                    collectionsIndex[c].items.push(item);
+                collectionsIndex[c].items.push(item);
 
-                    if (item._meta.ids) {
-                        item._meta.ids.forEach((k) => push(collectionsIndex[c].idIndex, k, item));
-                    }
+                if (item._meta.ids) {
+                    item._meta.ids.forEach((k) => push(collectionsIndex[c].idIndex, k, item));
+                }
 
-                    if (item.tags) {
-                        item.tags.forEach((k) => push(collectionsIndex[c].tagsIndex, k, item));
-                    }
+                if (item.tags) {
+                    item.tags.forEach((k) => push(collectionsIndex[c].tagsIndex, k, item));
                 }
             });
 
@@ -321,6 +344,8 @@ const build = (userDir) => {
                     page += 1;
                 } while (page <= pageCount);
             });
+
+            collectionsIndex[c].items = sortFeedItems(_uniqBy(collectionsIndex[c].items, 'id'));
 
             // Aggregate indexes:
 
