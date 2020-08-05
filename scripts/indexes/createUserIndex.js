@@ -7,6 +7,8 @@ import YAML from 'js-yaml';
 import dotenv from 'dotenv';
 import _pickBy from 'lodash/pickBy.js';
 import Moment from 'moment';
+import _sortBy from 'lodash/sortBy.js';
+import _reverse from 'lodash/reverse.js';
 import { writeFiles, averageCoord } from './utils/writeFiles.js';
 
 dotenv.config();
@@ -17,6 +19,15 @@ const appHost = process.env.APP_HOST || 'https://natureshare.org.au/';
 const contentHost = process.env.CONTENT_HOST || 'https://files.natureshare.org.au/';
 
 const items = [];
+
+const sortFeedItems = (ary) =>
+    _reverse(
+        _sortBy(ary, [
+            (i) => (i._meta && i._meta.featured ? 1 : 0),
+            'date_published',
+            'date_modified',
+        ]),
+    );
 
 Glob.sync(Path.join('*'), { cwd })
     .filter((f) => f !== '_index' && FS.lstatSync(Path.join(cwd, f)).isDirectory())
@@ -30,7 +41,10 @@ Glob.sync(Path.join('*'), { cwd })
         } else {
             const profile = YAML.safeLoad(FS.readFileSync(Path.join(cwd, filePath)));
 
-            const id = new URL(Path.join('.', username), contentHost).href;
+            const id = new URL(
+                Path.join('.', username, '_index', 'items', 'index.json'),
+                contentHost,
+            ).href;
 
             let image = null;
             let datePublished = (profile.joined
@@ -56,17 +70,19 @@ Glob.sync(Path.join('*'), { cwd })
                 _pickBy(
                     {
                         id,
-                        url: `${appHost}profile?i=${encodeURIComponent(id)}`,
+                        url: `${appHost}items?i=${encodeURIComponent(id)}`,
                         title: profile.name || username,
                         image,
                         content_text: (profile.bio || '-').slice(0, 255),
                         date_published: datePublished,
                         date_modified: dateModified,
+                        _geo: {
+                            coordinates,
+                        },
                         _meta: _pickBy(
                             {
                                 itemCount,
                                 date: (dateModified && dateModified.split('T', 1)[0]) || null,
-                                coordinates,
                             },
                             Boolean,
                         ),
@@ -81,7 +97,7 @@ writeFiles({
     userDir: appName,
     subDir: '../..', // bit of hack
     appView: 'profile',
-    feedItems: items,
+    feedItems: sortFeedItems(items),
     _title: appName,
     _homePageUrl: appHost,
     _userUrl: appHost,

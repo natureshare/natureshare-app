@@ -91,3 +91,11 @@ export const fetchYaml = (src, host) =>
             })
             .catch(() => resolve(false)),
     );
+
+export const shortUrl = (url) =>
+    url
+        ? url
+              .replace(process.env.contentHostDev, './')
+              .replace(process.env.contentHost, './')
+              .replace(/\/$/, '')
+        : url;

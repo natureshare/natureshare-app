@@ -1,4 +1,4 @@
-/* global process URL */
+/* global process URL URLSearchParams */
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
@@ -30,33 +30,43 @@ import GeoJsonMap from '../components/GeoJsonMap';
 import LicenseLink from '../components/LicenseLink';
 import AddCommentFormDialog from '../components/item/AddCommentFormDialog';
 import AddToCollectionFormDialog from '../components/item/AddToCollectionFormDialog';
-import { resolveUrl, fetchYaml } from '../utils/fetch';
-
-const dirStr = (i) => i.toLowerCase().replace(/\s/g, '_');
+import { resolveUrl, fetchYaml, shortUrl } from '../utils/fetch';
 
 export default function Item() {
     const router = useRouter();
 
-    const [id, setId] = useState({});
-    const [username, setUsername] = useState(null);
+    const [itemUrl, setItemUrl] = useState();
+    const [sourceUrl, setSourceUrl] = useState();
+    const [userItemsUrl, setUserItemsUrl] = useState();
     const [profileUrl, setProfileUrl] = useState(null);
-    const [profile, setProfile] = useState(null);
-    const [currentUrl, setCurrentUrl] = useState('');
-    const [itemUrl, setItemUrl] = useState(null);
+
+    const [userName, setUserName] = useState(null);
+    const [userProfile, setUserProfile] = useState(null);
+
     const [item, setItem] = useState(null);
     const [geo, setGeo] = useState(null);
+
     const [showMedia, setShowMedia] = useState(false);
 
+    const itemsParams = (p, t) => {
+        if (itemUrl) {
+            const i = shortUrl(sourceUrl || userItemsUrl);
+            return new URLSearchParams({ i, p, t });
+        }
+        return {};
+    };
+
     useEffect(() => {
-        if (typeof window === 'object') setCurrentUrl(window.location.href);
-        const { i } = queryString.parse(router.asPath.split(/\?/)[1]);
-        const url = resolveUrl(`${i}.yaml`, process.env.contentHost);
+        const { i, s } = queryString.parse(router.asPath.split('?', 2)[1]);
 
-        if (url) {
-            setId(i);
-            setItemUrl(url);
+        const _itemUrl = i ? resolveUrl(i, process.env.contentHost) : null;
+        const _sourceUrl = s ? resolveUrl(s, process.env.contentHost) : null;
 
-            fetchYaml(url).then((obj) => {
+        setItemUrl(_itemUrl);
+        setSourceUrl(_sourceUrl);
+
+        if (_itemUrl) {
+            fetchYaml(_itemUrl).then((obj) => {
                 if (obj) {
                     setItem(obj);
                     if (obj.latitude && obj.longitude) {
@@ -70,7 +80,7 @@ export default function Item() {
                                         coordinates: [obj.longitude, obj.latitude],
                                     },
                                     properties: {
-                                        id,
+                                        id: shortUrl(_itemUrl),
                                         title: (obj.datetime || obj.created_at).split('T')[0],
                                     },
                                 },
@@ -80,17 +90,13 @@ export default function Item() {
                 }
             });
 
-            const profilePath = `${url.split('/items/', 1)[0]}/`;
+            setUserItemsUrl(resolveUrl('../../../_index/items/index.json', _itemUrl));
 
-            const _profileUrl = profilePath
-                .replace(process.env.contentHost, './')
-                .replace(/\/$/, '');
-
+            const _profileUrl = resolveUrl('../../../profile.yaml', _itemUrl);
             setProfileUrl(_profileUrl);
+            fetchYaml(_profileUrl).then((obj) => obj && setUserProfile(obj));
 
-            setUsername(_last(_profileUrl.split('/')));
-
-            fetchYaml('./profile.yaml', profilePath).then((obj) => obj && setProfile(obj));
+            setUserName(new URL('.', _profileUrl).pathname.split('/', 2)[1]);
         }
     }, []);
 
@@ -112,17 +118,14 @@ export default function Item() {
     }, [itemUrl]);
 
     return (
-        <Layout
-            title={username || 'Loading...'}
-            href={`/profile?i=${encodeURIComponent(profileUrl)}`}
-        >
+        <Layout title={userName} href={`/items?i=${shortUrl(userItemsUrl)}`}>
             <H1>
                 {(item && item.datetime && item.datetime.replace('T', ' ').replace('Z', '')) ||
                     'Loading...'}
             </H1>
             <H2>
                 by{' '}
-                {(profile && profile.name) ||
+                {(userProfile && userProfile.name) ||
                     (profileUrl && _last(profileUrl.split('/'))) ||
                     'Loading...'}
             </H2>
@@ -240,16 +243,8 @@ export default function Item() {
                                     button
                                     divider={i + 1 !== item.id.length}
                                     component={Link}
-                                    href="/id"
-                                    as={`/id?i=${encodeURIComponent(
-                                        relativeUrl(
-                                            `../../../_index/ids/${name[0].toLowerCase()}/${name
-                                                .split(' ', 1)[0]
-                                                .toLowerCase()}/${dirStr(
-                                                name.replace(/\//g, '~').replace(/[.'"`]/g, ''),
-                                            )}`,
-                                        ),
-                                    )}`}
+                                    href="/items"
+                                    as={`/items?${itemsParams('id', name)}`}
                                 >
                                     <ListItemText
                                         primary={name}
@@ -282,10 +277,8 @@ export default function Item() {
                                     variant="outlined"
                                     onClick={() => {}}
                                     component={Link}
-                                    href="/tag"
-                                    as={`/collection?i=${encodeURIComponent(
-                                        relativeUrl(`../../../_index/tags/${dirStr(tag)}`),
-                                    )}`}
+                                    href="/items"
+                                    as={`/items?${itemsParams('tag', tag)}`}
                                     style={{ wordBreak: 'break-all' }}
                                 />
                             </Grid>
@@ -304,10 +297,13 @@ export default function Item() {
                                     button
                                     divider={i + 1 !== item.collections.length}
                                     component={Link}
-                                    href="/collection"
-                                    as={`/collection?i=${encodeURIComponent(
-                                        relativeUrl(
-                                            `../../../_index/collections/${dirStr(name)}/aggregate`,
+                                    href="/items"
+                                    as={`/items?i=${encodeURIComponent(
+                                        shortUrl(
+                                            relativeUrl(
+                                                `../../../_index/collections/${name}/aggregate/index.json`,
+                                                itemUrl,
+                                            ),
                                         ),
                                     )}`}
                                     style={{ wordBreak: 'break-all' }}
@@ -320,7 +316,7 @@ export default function Item() {
                     <Box mt={2}>
                         <AddToCollectionFormDialog
                             data={{
-                                url: currentUrl,
+                                url: window.location.href,
                                 action: 'itemToCollection',
                                 target: itemUrl,
                             }}
@@ -374,8 +370,8 @@ export default function Item() {
                     <Box mt={2}>
                         <AddCommentFormDialog
                             data={{
-                                recipient: username,
-                                url: currentUrl,
+                                recipient: userName,
+                                url: window.location.href,
                                 action: 'itemComment',
                                 target: itemUrl,
                             }}

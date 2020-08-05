@@ -14,7 +14,7 @@
         "linter": "eslint --fix --ext .js,.mjs,.cjs,.jsx --ignore-path .gitignore .",
         "prettier": "prettier --write '*.js' '{components,pages,scripts,utils}/**/*.{js,jsx,mjs,cjs}'",
         "serve": "serve -l 3000 out",
-        "serveFiles": "serve --cors -l 3001 ../natureshare-index/",
+        "serveFiles": "serve --cors -l 3001 ../natureshare-files/",
         "serveSpecies": "serve --cors -l 3002 ../natureshare-species-wiki/"
     },
     "keywords": [],

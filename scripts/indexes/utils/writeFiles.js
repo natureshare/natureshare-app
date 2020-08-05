@@ -48,7 +48,7 @@ const coord = (ary) =>
 const average = (ary) => ary.reduce((a, b) => a + b, 0) / ary.length;
 
 export const averageCoord = (items) => {
-    const coordAry = items.map((i) => i._meta.coordinates).filter(Boolean);
+    const coordAry = items.map((i) => i._geo.coordinates).filter(Boolean);
 
     return coord([average(coordAry.map((i) => i[0])), average(coordAry.map((i) => i[1]))]);
 };
@@ -58,7 +58,6 @@ const PER_PAGE = 1000;
 export const writeFiles = ({
     userDir,
     subDir,
-    appView,
     feedItems,
     _title,
     _description,
@@ -67,11 +66,9 @@ export const writeFiles = ({
 }) => {
     const fileDir = Path.join(userDir, '_index', subDir);
     const feedUrl = new URL(Path.join('.', fileDir, 'index.json'), contentHost).href;
-    const homePageUrl = `${appHost}${appView}?i=${encodeURIComponent(
-        new URL('.', feedUrl).href.replace(/\/$/, ''),
-    )}`;
+    const homePageUrl = `${appHost}items?i=${encodeURIComponent(feedUrl)}`;
     const userUrl = `${appHost}profile?i=${encodeURIComponent(
-        new URL(Path.join('.', userDir), contentHost).href,
+        new URL(Path.join('.', userDir, '_index', 'items', 'index.json'), contentHost).href,
     )}`;
 
     MkDir.sync(Path.join(cwd, fileDir));
@@ -126,12 +123,12 @@ export const writeFiles = ({
         const geo = {
             type: 'FeatureCollection',
             features: feedItems
-                .filter(({ _meta }) => _meta.coordinates)
-                .map(({ id, url, title: itemTitle, image, _meta }) => ({
+                .filter(({ _geo }) => _geo && _geo.coordinates)
+                .map(({ id, url, title: itemTitle, image, _geo, _meta }) => ({
                     type: 'Feature',
                     geometry: {
                         type: 'Point',
-                        coordinates: _meta.coordinates,
+                        coordinates: _geo.coordinates,
                     },
                     properties: omitNull({
                         id,
@@ -149,19 +146,18 @@ export const writeFiles = ({
     }
 };
 
-export const writeFilesForEach = ({ index, userDir, subDirCb, appView, titleCb, descriptionCb }) =>
+export const writeFilesForEach = ({ index, userDir, subDirCb, titleCb, descriptionCb }) =>
     Object.keys(index).forEach((i) => {
         writeFiles({
             userDir,
             subDir: subDirCb(i),
-            appView,
             feedItems: index[i],
             _title: (titleCb && titleCb(i)) || i,
             _description: descriptionCb && descriptionCb(i),
         });
     });
 
-export const writeFilesIndex = ({ index, userDir, subDir, appView, _title, metaCb }) => {
+export const writeFilesIndex = ({ index, userDir, subDir, _title, metaCb }) => {
     const feedItems = _reverse(
         _sortBy(
             Object.keys(index).map((i) => {
@@ -172,10 +168,12 @@ export const writeFilesIndex = ({ index, userDir, subDir, appView, _title, metaC
                     image: getFirst(index[i], 'image'),
                     date_published: getFirst(index[i], 'date_published'),
                     date_modified: getFirst(index[i], 'date_published'),
+                    _geo: {
+                        coordinates: averageCoord(index[i]),
+                    },
                     _meta: {
                         itemCount: index[i].length,
                         date: (getFirst(index[i], 'date_published') || '').split('T', 1)[0],
-                        coordinates: averageCoord(index[i]),
                         ...(_meta || {}),
                     },
                     ...mixin,
@@ -193,7 +191,6 @@ export const writeFilesIndex = ({ index, userDir, subDir, appView, _title, metaC
     writeFiles({
         userDir,
         subDir,
-        appView,
         _title,
         feedItems,
     });

@@ -1,39 +1,34 @@
 /* eslint-disable react/no-array-index-key */
 /* global process URL */
-import Box from '@material-ui/core/Box';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import queryString from 'query-string';
 import _lines from 'underscore.string/lines';
-import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
-import FeedWithMap from '../components/FeedWithMap';
-import { resolveUrl, fetchYaml } from '../utils/fetch';
-import { P } from '../components/Typography';
-import CategoryIcon from '../components/CategoryIcon';
-import Link from '../components/Link';
+import { resolveUrl, fetchYaml, shortUrl } from '../utils/fetch';
+import { H1, H2, P } from '../components/Typography';
+import Layout from '../components/Layout';
 
 export default function Profile() {
     const router = useRouter();
 
-    const [feedUrl, setFeedUrl] = useState(null);
-    const [profileUrl, setProfileUrl] = useState(null);
-    const [profile, setProfile] = useState(null);
+    const [username, setUsername] = useState();
+    const [feedUrl, setFeedUrl] = useState();
+    const [profile, setProfile] = useState();
 
     useEffect(() => {
         const { i } = queryString.parse(router.asPath.split(/\?/)[1]);
-
-        const url = resolveUrl(`${i}/profile.yaml`, process.env.contentHost);
-
-        if (url) {
-            setProfileUrl(url);
-            setFeedUrl(resolveUrl('./_index/items/', url));
+        if (i) {
+            setUsername(new URL(i, process.env.contentHost).pathname.split('/', 2)[1]);
+            const url = resolveUrl(i, process.env.contentHost);
+            setFeedUrl(shortUrl(resolveUrl(`./_index/items/index.json`, url)));
             fetchYaml(url).then((obj) => obj && setProfile(obj));
         }
     }, []);
 
     return (
-        <FeedWithMap url={feedUrl} href="item" h1={(profile && profile.name) || null}>
+        <Layout title={username} href={`/items?i=${encodeURIComponent(feedUrl)}`}>
+            <H1>Profile</H1>
+            <H2>{profile && profile.name}</H2>
             {profile && profile.organisation && (
                 <>
                     <P>
@@ -55,39 +50,6 @@ export default function Profile() {
                     <a href={profile.website}>{profile.website}</a>
                 </>
             )}
-            <Box mt={3}>
-                <Grid
-                    container
-                    direction="row"
-                    justify="flex-start"
-                    alignItems="center"
-                    spacing={2}
-                >
-                    {['items', 'collections', 'ids', 'tags'].map((href) => (
-                        <Grid key={href} item>
-                            <Button
-                                component={Link}
-                                href={`/${href}`}
-                                as={`/${href}?i=${
-                                    !profileUrl
-                                        ? ''
-                                        : encodeURIComponent(
-                                              new URL(`./_index/${href}`, profileUrl).href.replace(
-                                                  process.env.contentHost,
-                                                  './',
-                                              ),
-                                          )
-                                }`}
-                                variant="outlined"
-                                color="primary"
-                                startIcon={<CategoryIcon category={href} />}
-                            >
-                                {href}
-                            </Button>
-                        </Grid>
-                    ))}
-                </Grid>
-            </Box>
-        </FeedWithMap>
+        </Layout>
     );
 }

@@ -6,18 +6,30 @@ import queryString from 'query-string';
 import FeedWithMap from './FeedWithMap';
 import { resolveUrl } from '../utils/fetch';
 
-export default function BasicPage({ href }) {
+export default function BasicPage({ groupByTag, tagFilter, tagPrefix, href }) {
     const router = useRouter();
 
     const [feedUrl, setFeedUrl] = useState(null);
+    const [tag, setTag] = useState(null);
 
     useEffect(() => {
-        const { i } = queryString.parse(router.asPath.split(/\?/)[1]);
+        const { i, t } = queryString.parse(router.asPath.split(/\?/)[1]);
         const url = resolveUrl(`${i}/`, process.env.contentHost);
         if (url) {
             setFeedUrl(url);
         }
+        if (tagFilter && t) {
+            setTag(t);
+        }
     }, []);
 
-    return <FeedWithMap url={feedUrl} href={href} />;
+    return (
+        <FeedWithMap
+            groupByTag={groupByTag}
+            tagPrefix={tagPrefix}
+            tagFilter={tagFilter ? tag : undefined}
+            url={feedUrl}
+            href={href}
+        />
+    );
 }
