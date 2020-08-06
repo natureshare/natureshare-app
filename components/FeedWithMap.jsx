@@ -1,7 +1,7 @@
 /* global URLSearchParams process */
 /* eslint-disable react/no-array-index-key */
 import Box from '@material-ui/core/Box';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Head from 'next/head';
@@ -9,10 +9,9 @@ import FileCode from 'mdi-material-ui/FileCode';
 import FileDocument from 'mdi-material-ui/FileDocument';
 import FileLink from 'mdi-material-ui/FileLink';
 import _lines from 'underscore.string/lines';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import _startsWith from 'lodash/startsWith';
 import _mapValues from 'lodash/mapValues';
+import Pagination from '@material-ui/lab/Pagination';
 import { resolveUrl, fetchJson, shortUrl } from '../utils/fetch';
 import FeedItemsGrid from './FeedItemsGrid';
 import GeoJsonMap from './GeoJsonMap';
@@ -194,19 +193,9 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
         }
     };
 
-    const selectPage = useCallback(() => {
-        if (window && typeof window === 'object' && lastPage > 0) {
-            const selected = parseInt(window.prompt('Page number?', page), 10);
-            if (selected && selected >= 1 && selected <= lastPage) {
-                scrollToTop();
-                setPage(selected);
-            }
-        }
-    }, [page, lastPage]);
-
-    const nextPage = (step) => {
+    const setPageAndScrollToTop = (i) => {
         scrollToTop();
-        setPage(page + step);
+        setPage(i);
     };
 
     return (
@@ -260,33 +249,17 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
                 {feed.title && itemsPage.length === 0 && <P>No items.</P>}
                 <FeedItemsGrid items={itemsPage} hideTitle={tag} sourceUrl={shortUrl(url)} />
             </Box>
-            {feed && lastPage > 1 && (
-                <Box mt={3}>
-                    {url && (
-                        <ButtonGroup size="small">
-                            {page !== 1 && (
-                                <Button
-                                    startIcon={<ChevronLeftIcon />}
-                                    onClick={() => nextPage(-1)}
-                                >
-                                    Prev
-                                </Button>
-                            )}
-
-                            <Button onClick={selectPage}>
-                                Page {page} of {lastPage}
-                            </Button>
-                            {page < lastPage && (
-                                <Button endIcon={<ChevronRightIcon />} onClick={() => nextPage(1)}>
-                                    Next
-                                </Button>
-                            )}
-                        </ButtonGroup>
-                    )}
-                </Box>
-            )}
-            <Box mt={5}>
-                {url && (
+            <Box mt={3}>
+                <Pagination
+                    count={lastPage}
+                    page={page}
+                    onChange={(e, i) => setPageAndScrollToTop(i)}
+                    variant="outlined"
+                    shape="rounded"
+                />
+            </Box>
+            <Box mt={5} style={{ textAlign: 'center' }}>
+                {url && !tagPrefix && !tag && (
                     <ButtonGroup size="small">
                         <Button
                             startIcon={icon('json')}

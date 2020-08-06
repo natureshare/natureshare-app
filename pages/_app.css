@@ -10,3 +10,16 @@ a {
   max-width: 150px;
   max-height: 150px;
 }
+
+.MuiPagination-ul {
+  justify-content: center;
+}
+
+.MuiPagination-ul li button {
+  font-weight: bold;
+}
+
+.MuiPagination-ul li:first-child button,
+  .MuiPagination-ul li:last-child button {
+  min-width: 50px;
+}

@@ -19,6 +19,12 @@ export const H3 = ({ children }) => (
     </Box>
 );
 
+export const H4 = ({ children }) => (
+    <Box mt={4} mb={3}>
+        <Typography variant="h4">{children}</Typography>
+    </Box>
+);
+
 export const P = ({ children }) => (
     <Box my={1}>
         <Typography variant="body1">{children}</Typography>

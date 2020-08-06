@@ -14,7 +14,7 @@ import Chip from '@material-ui/core/Chip';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import CardActions from '@material-ui/core/CardActions';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -24,6 +24,10 @@ import _last from 'lodash/last';
 import _startsWith from 'lodash/startsWith';
 import _endsWith from 'lodash/endsWith';
 import _sortBy from 'lodash/sortBy';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogActions from '@material-ui/core/DialogActions';
 import { H1, H2, H3, P, Body1, Body2 } from '../components/Typography';
 import Link from '../components/Link';
 import Layout from '../components/Layout';
@@ -48,6 +52,7 @@ export default function Item() {
     const [geo, setGeo] = useState(null);
 
     const [showMedia, setShowMedia] = useState(false);
+    const [showPhoto, setShowPhoto] = useState();
 
     const itemsParams = (p, t) => {
         if (itemUrl) {
@@ -60,7 +65,9 @@ export default function Item() {
     useEffect(() => {
         const { i, s } = queryString.parse(router.asPath.split('?', 2)[1]);
 
-        const _itemUrl = i ? resolveUrl(_endsWith(i, '.yaml') ? i : `${i}.yaml`, process.env.contentHost) : null;
+        const _itemUrl = i
+            ? resolveUrl(_endsWith(i, '.yaml') ? i : `${i}.yaml`, process.env.contentHost)
+            : null;
         const _sourceUrl = s ? resolveUrl(s, process.env.contentHost) : null;
 
         setItemUrl(_itemUrl);
@@ -101,17 +108,12 @@ export default function Item() {
         }
     }, []);
 
-    const relativeUrl = useCallback(
-        (url) => resolveUrl(url, itemUrl).replace(process.env.contentHost, './').replace(/\/$/, ''),
-        [itemUrl],
-    );
-
     const githubUrl = useMemo(() => {
         if (itemUrl) {
-            if (_startsWith(itemUrl, process.env.contentHost)) {
+            if (_startsWith(shortUrl(itemUrl), './')) {
                 return new URL(
-                    itemUrl.replace(process.env.contentHost, './tree/master/'),
-                    `https://github.com/${process.env.githubContentPath}/`,
+                    shortUrl(itemUrl),
+                    `https://github.com/${process.env.githubContentPath}/tree/master/`,
                 ).href;
             }
         }
@@ -161,12 +163,7 @@ export default function Item() {
                                             <Button
                                                 size="small"
                                                 onClick={() => {
-                                                    if (
-                                                        window.confirm(
-                                                            'File may be very large. Are you sure?',
-                                                        )
-                                                    )
-                                                        window.location = original;
+                                                    setShowPhoto(original);
                                                     return true;
                                                 }}
                                             >
@@ -178,16 +175,36 @@ export default function Item() {
                             ),
                         )}
                     </Grid>
+                    <Dialog
+                        open={showPhoto}
+                        onClose={() => setShowPhoto(false)}
+                        fullWidth
+                        maxWidth="sm"
+                    >
+                        <DialogTitle>Show original photo?</DialogTitle>
+                        <DialogContent>
+                            <P>File may be very large. Are you sure?</P>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button
+                                onClick={() => {
+                                    window.location = showPhoto;
+                                }}
+                            >
+                                Ok
+                            </Button>
+                            <Button onClick={() => setShowPhoto(false)} autoFocus>
+                                Cancel
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
                 </Box>
             )}
             {item && item.videos && item.videos.length > 0 && (
                 <Box mt={3}>
                     <H3>Video</H3>
                     {!showMedia && (
-                        <Button
-                            variant="outlined"
-                            onClick={() => window.confirm('Show video?') && setShowMedia(true)}
-                        >
+                        <Button variant="outlined" onClick={() => setShowMedia(true)}>
                             Show Video
                         </Button>
                     )}
@@ -209,10 +226,7 @@ export default function Item() {
                 <Box mt={3}>
                     <H3>Audio</H3>
                     {!showMedia && (
-                        <Button
-                            variant="outlined"
-                            onClick={() => window.confirm('Show audio?') && setShowMedia(true)}
-                        >
+                        <Button variant="outlined" onClick={() => setShowMedia(true)}>
                             Show Audio
                         </Button>
                     )}
@@ -301,7 +315,7 @@ export default function Item() {
                                     href="/items"
                                     as={`/items?i=${encodeURIComponent(
                                         shortUrl(
-                                            relativeUrl(
+                                            resolveUrl(
                                                 `../../../_index/collections/${name}/aggregate/index.json`,
                                                 itemUrl,
                                             ),
