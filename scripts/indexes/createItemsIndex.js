@@ -28,8 +28,8 @@ const coord = (ary) =>
         : null;
 
 const userUrl = (userDir) =>
-    `${appHost}profile?i=${encodeURIComponent(
-        new URL(Path.join('.', userDir, 'profile.yaml'), contentHost),
+    `${appHost}items?i=${encodeURIComponent(
+        new URL(Path.join('.', userDir, '_index', 'items', 'index.json'), contentHost),
     )}`;
 
 const idNames = (ary) =>

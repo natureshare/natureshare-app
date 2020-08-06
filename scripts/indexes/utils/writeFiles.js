@@ -67,7 +67,7 @@ export const writeFiles = ({
     const fileDir = Path.join(userDir, '_index', subDir);
     const feedUrl = new URL(Path.join('.', fileDir, 'index.json'), contentHost).href;
     const homePageUrl = `${appHost}items?i=${encodeURIComponent(feedUrl)}`;
-    const userUrl = `${appHost}profile?i=${encodeURIComponent(
+    const userUrl = `${appHost}items?i=${encodeURIComponent(
         new URL(Path.join('.', userDir, '_index', 'items', 'index.json'), contentHost).href,
     )}`;
 
