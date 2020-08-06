@@ -19,7 +19,7 @@ import GeoJsonMap from './GeoJsonMap';
 import Layout from './Layout';
 import { H1, P } from './Typography';
 
-const PER_PAGE = 50;
+const PER_PAGE = 52;
 
 const getFirst = (ary, prop) => {
     if (ary && ary.length !== 0) {

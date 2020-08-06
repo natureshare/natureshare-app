@@ -22,6 +22,7 @@ import { useRouter } from 'next/router';
 import queryString from 'query-string';
 import _last from 'lodash/last';
 import _startsWith from 'lodash/startsWith';
+import _endsWith from 'lodash/endsWith';
 import _sortBy from 'lodash/sortBy';
 import { H1, H2, H3, P, Body1, Body2 } from '../components/Typography';
 import Link from '../components/Link';
@@ -59,7 +60,7 @@ export default function Item() {
     useEffect(() => {
         const { i, s } = queryString.parse(router.asPath.split('?', 2)[1]);
 
-        const _itemUrl = i ? resolveUrl(i, process.env.contentHost) : null;
+        const _itemUrl = i ? resolveUrl(_endsWith(i, '.yaml') ? i : `${i}.yaml`, process.env.contentHost) : null;
         const _sourceUrl = s ? resolveUrl(s, process.env.contentHost) : null;
 
         setItemUrl(_itemUrl);
