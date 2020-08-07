@@ -161,7 +161,7 @@ export const writeFilesIndex = ({ index, userDir, subDir, _title, metaCb }) => {
     const feedItems = _reverse(
         _sortBy(
             Object.keys(index).map((i) => {
-                const { _meta, ...mixin } = metaCb ? metaCb(i) : {};
+                const { _geo, _meta, ...mixin } = metaCb ? metaCb(i) : {};
                 return omitNull({
                     title: i.replace(/_/g, ' '),
                     content_text: `${index[i].length} items`,
@@ -170,6 +170,7 @@ export const writeFilesIndex = ({ index, userDir, subDir, _title, metaCb }) => {
                     date_modified: getFirst(index[i], 'date_published'),
                     _geo: {
                         coordinates: averageCoord(index[i]),
+                        ...(_geo || {}),
                     },
                     _meta: {
                         itemCount: index[i].length,

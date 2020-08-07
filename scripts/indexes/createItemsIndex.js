@@ -288,12 +288,12 @@ const build = (userDir) => {
                     id,
                     url: `${appHost}items?i=${encodeURIComponent(id)}`,
                     title: collectionsIndex[i].title,
-                    _geo: {
+                    _geo: omitNull({
                         coordinates: coord([
                             collectionsIndex[i].longitude,
                             collectionsIndex[i].latitude,
                         ]),
-                    },
+                    }),
                     _meta: omitNull({
                         featured: collectionsIndex[i].featured || null,
                         idCount: collectionsIndex[i].tags.filter((t) => _startsWith(t, 'id='))
