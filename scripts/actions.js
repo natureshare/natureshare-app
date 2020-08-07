@@ -107,7 +107,7 @@ const run = async () => {
         validator.validate(feed, feedSchema);
 
         if (feed.items.length === 0) {
-            console.log('No updates.');
+            throw Error('No updates.');
         } else {
             const usernames = [];
             const items = _sortBy(feed.items, 'date_published');
@@ -148,5 +148,11 @@ const run = async () => {
 };
 
 run()
-    .then(() => console.log('Done.'))
-    .catch((err) => console.error(err));
+    .then(() => {
+        console.log('Done.');
+        process.exit(0);
+    })
+    .catch((err) => {
+        console.error(err.message);
+        process.exit(1);
+    });
