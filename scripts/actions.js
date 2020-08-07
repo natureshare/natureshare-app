@@ -109,6 +109,7 @@ const run = async () => {
         if (feed.items.length === 0) {
             console.log('No updates.');
         } else {
+            const usernames = [];
             const items = _sortBy(feed.items, 'date_published');
 
             items.forEach((item) => {
@@ -121,13 +122,27 @@ const run = async () => {
                     console.log('target:', item._meta.target);
                     console.log('data:', item.content_text.trim());
 
+                    if (item._meta.recipient) usernames.push(item._meta.recipient);
+
                     actions[item.title](item);
 
                     console.log('---');
                 }
             });
 
-            fs.writeFileSync(lastUpdateFilePath, JSON.stringify(_last(items).date_published));
+            fs.writeFileSync(
+                lastUpdateFilePath,
+                JSON.stringify(_last(items).date_published),
+                null,
+                1,
+            );
+
+            if (usernames.length !== 0) {
+                fs.writeFileSync(
+                    path.join(cwd, '.updated_usernames'),
+                    JSON.stringify(_uniq(usernames), null, 1),
+                );
+            }
         }
     }
 };

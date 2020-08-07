@@ -5,9 +5,6 @@ import { useState, useEffect, useMemo } from 'react';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Head from 'next/head';
-import FileCode from 'mdi-material-ui/FileCode';
-import FileDocument from 'mdi-material-ui/FileDocument';
-import FileLink from 'mdi-material-ui/FileLink';
 import _lines from 'underscore.string/lines';
 import _startsWith from 'lodash/startsWith';
 import _mapValues from 'lodash/mapValues';
@@ -17,6 +14,7 @@ import FeedItemsGrid from './FeedItemsGrid';
 import GeoJsonMap from './GeoJsonMap';
 import Layout from './Layout';
 import { H1, P } from './Typography';
+import FileIcon from './FileIcon';
 
 const PER_PAGE = 52;
 
@@ -42,17 +40,6 @@ export const averageCoord = (items) => {
     const coordAry = items.map((i) => i._geo.coordinates).filter(Boolean);
 
     return coord([average(coordAry.map((i) => i[0])), average(coordAry.map((i) => i[1]))]);
-};
-
-const iconMap = {
-    xml: FileCode,
-    json: FileLink,
-    yaml: FileDocument,
-};
-
-const icon = (i) => {
-    const Icon = iconMap[i];
-    return <Icon />;
 };
 
 export default function FeedWithMap({ url, tagPrefix, tag, children }) {
@@ -262,28 +249,28 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
                 {url && !tagPrefix && !tag && (
                     <ButtonGroup size="small">
                         <Button
-                            startIcon={icon('json')}
+                            startIcon={<FileIcon type="json" />}
                             href={resolveUrl(`./index.json`, url)}
                             target="_blank"
                         >
                             JSON
                         </Button>
                         <Button
-                            startIcon={icon('json')}
+                            startIcon={<FileIcon type="json" />}
                             href={resolveUrl(`./index.geo.json`, url)}
                             target="_blank"
                         >
                             GeoJSON
                         </Button>
                         <Button
-                            startIcon={icon('xml')}
+                            startIcon={<FileIcon type="xml" />}
                             href={resolveUrl(`./index.rss.xml`, url)}
                             target="_blank"
                         >
                             RSS
                         </Button>
                         <Button
-                            startIcon={icon('xml')}
+                            startIcon={<FileIcon type="xml" />}
                             href={resolveUrl(`./index.atom.xml`, url)}
                             target="_blank"
                         >

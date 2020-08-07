@@ -13,6 +13,7 @@ import Typography from '@material-ui/core/Typography';
 import Link from '../Link';
 import { H4 } from '../Typography';
 import { fetchYaml } from '../../utils/fetch';
+import FileIcon from '../FileIcon';
 
 const dirStr = (i) => i.toLowerCase().replace(/\s/g, '_');
 
@@ -144,7 +145,11 @@ export default function IdHeader({ indexUrl, tagPrefix, tag }) {
                         )}
                     </AccordionDetails>
                     <AccordionActions>
-                        <Button href={githubUrl} target="_blank">
+                        <Button
+                            href={githubUrl}
+                            target="_blank"
+                            startIcon={<FileIcon type="yaml" />}
+                        >
                             Edit
                         </Button>
                     </AccordionActions>

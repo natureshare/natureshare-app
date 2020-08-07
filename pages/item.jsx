@@ -4,12 +4,6 @@ import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardMedia from '@material-ui/core/CardMedia';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
 import Chip from '@material-ui/core/Chip';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
@@ -28,7 +22,13 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
-import { H1, H2, H3, P, Body1, Body2 } from '../components/Typography';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import AccordionActions from '@material-ui/core/AccordionActions';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Typography from '@material-ui/core/Typography';
+import { H1, H2, P, Body1, Body2 } from '../components/Typography';
 import Link from '../components/Link';
 import Layout from '../components/Layout';
 import GeoJsonMap from '../components/GeoJsonMap';
@@ -36,6 +36,19 @@ import LicenseLink from '../components/LicenseLink';
 import AddCommentFormDialog from '../components/item/AddCommentFormDialog';
 import AddToCollectionFormDialog from '../components/item/AddToCollectionFormDialog';
 import { resolveUrl, fetchYaml, shortUrl } from '../utils/fetch';
+import FileIcon from '../components/FileIcon';
+
+const PageSection = ({ title, children, actions }) => (
+    <Accordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h3">{title}</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+            <div style={{ width: '100%' }}>{children}</div>
+        </AccordionDetails>
+        {actions && <AccordionActions>{actions}</AccordionActions>}
+    </Accordion>
+);
 
 export default function Item() {
     const router = useRouter();
@@ -133,7 +146,7 @@ export default function Item() {
                     'Loading...'}
             </H2>
             {item && item.photos && item.photos.length > 0 && (
-                <Box mt={3}>
+                <Box mt={3} mb={3}>
                     <Grid
                         container
                         direction="row"
@@ -143,7 +156,7 @@ export default function Item() {
                     >
                         {_sortBy(item.photos, ['primary']).map(
                             ({ original_url: original, thumbnail_url: thumbnail }) => (
-                                <Grid key={thumbnail} item xs={12} sm={6} md={4}>
+                                <Grid key={thumbnail} item xs={12} sm={6}>
                                     <Card>
                                         <a
                                             href={thumbnail}
@@ -153,7 +166,7 @@ export default function Item() {
                                             <CardActionArea>
                                                 <CardMedia
                                                     style={{
-                                                        height: '250px',
+                                                        height: '33vh',
                                                     }}
                                                     image={thumbnail}
                                                 />
@@ -201,8 +214,7 @@ export default function Item() {
                 </Box>
             )}
             {item && item.videos && item.videos.length > 0 && (
-                <Box mt={3}>
-                    <H3>Video</H3>
+                <PageSection title="Video">
                     {!showMedia && (
                         <Button variant="outlined" onClick={() => setShowMedia(true)}>
                             Show Video
@@ -220,11 +232,10 @@ export default function Item() {
                                 [Video Not Supported]
                             </video>
                         ))}
-                </Box>
+                </PageSection>
             )}
             {item && item.audio && item.audio.length > 0 && (
-                <Box mt={3}>
-                    <H3>Audio</H3>
+                <PageSection title="Audio">
                     {!showMedia && (
                         <Button variant="outlined" onClick={() => setShowMedia(true)}>
                             Show Audio
@@ -236,17 +247,15 @@ export default function Item() {
                                 [Audio Not Supported]
                             </audio>
                         ))}
-                </Box>
+                </PageSection>
             )}
             {item && item.description && item.description.length > 0 && (
-                <Box mt={3}>
-                    <H3>Description</H3>
+                <PageSection title="Description">
                     <P>{item.description}</P>
-                </Box>
+                </PageSection>
             )}
             {item && item.id && item.id.length > 0 && (
-                <Box mt={3}>
-                    <H3>Identification</H3>
+                <PageSection title="Identification">
                     <List disablePadding>
                         {item.id
                             .map((i) =>
@@ -273,11 +282,10 @@ export default function Item() {
                                 </ListItem>
                             ))}
                     </List>
-                </Box>
+                </PageSection>
             )}
             {item && item.tags && item.tags.length > 0 && (
-                <Box mt={3}>
-                    <H3>Tags</H3>
+                <PageSection title="Tags">
                     <Grid
                         container
                         direction="row"
@@ -299,14 +307,36 @@ export default function Item() {
                             </Grid>
                         ))}
                     </Grid>
-                </Box>
+                </PageSection>
+            )}
+            {item && item.latitude && item.longitude && (
+                <PageSection title="Location">
+                    {item.location_name && <P>{item.location_name}</P>}
+                    <GeoJsonMap geo={geo} />
+                </PageSection>
             )}
             {item && (
-                <Box mt={3}>
-                    <H3>Collections</H3>
-                    {item.collections && item.collections.length > 0 && (
-                        <List disablePadding>
-                            {item.collections.map((name, i) => (
+                <PageSection
+                    title="Collections"
+                    actions={
+                        <AddToCollectionFormDialog
+                            data={{
+                                url: window.location.href,
+                                action: 'itemToCollection',
+                                target: itemUrl,
+                            }}
+                        />
+                    }
+                >
+                    <List disablePadding>
+                        {(!item.collections || item.collections.length === 0) && (
+                            <ListItem>
+                                <ListItemText secondary={<em>None</em>} />
+                            </ListItem>
+                        )}
+                        {item.collections &&
+                            item.collections.length > 0 &&
+                            item.collections.map((name, i) => (
                                 <ListItem
                                     key={name}
                                     button
@@ -326,32 +356,32 @@ export default function Item() {
                                     <ListItemText primary={name} />
                                 </ListItem>
                             ))}
-                        </List>
-                    )}
-                    <Box mt={2}>
-                        <AddToCollectionFormDialog
+                    </List>
+                </PageSection>
+            )}
+            {item && (
+                <PageSection
+                    title="Discussion"
+                    actions={
+                        <AddCommentFormDialog
                             data={{
+                                recipient: userName,
                                 url: window.location.href,
-                                action: 'itemToCollection',
+                                action: 'itemComment',
                                 target: itemUrl,
                             }}
                         />
-                    </Box>
-                </Box>
-            )}
-            {item && item.latitude && item.longitude && (
-                <Box mt={3}>
-                    <H3>Location</H3>
-                    {item.location_name && <P>{item.location_name}</P>}
-                    <GeoJsonMap geo={geo} />
-                </Box>
-            )}
-            {item && (
-                <Box mt={3}>
-                    <H3>Discussion</H3>
-                    {item.comments && item.comments.length !== 0 && (
-                        <List disablePadding>
-                            {item.comments.map(
+                    }
+                >
+                    <List disablePadding>
+                        {(!item.comments || item.comments.length === 0) && (
+                            <ListItem>
+                                <ListItemText secondary={<em>None</em>} />
+                            </ListItem>
+                        )}
+                        {item.comments &&
+                            item.comments.length !== 0 &&
+                            item.comments.map(
                                 ({ created_at: createdAt, username: commentUser, text }, i) => (
                                     <ListItem
                                         key={commentUser + createdAt}
@@ -380,120 +410,115 @@ export default function Item() {
                                     </ListItem>
                                 ),
                             )}
-                        </List>
-                    )}
-                    <Box mt={2}>
-                        <AddCommentFormDialog
-                            data={{
-                                recipient: userName,
-                                url: window.location.href,
-                                action: 'itemComment',
-                                target: itemUrl,
-                            }}
-                        />
-                    </Box>
-                </Box>
+                    </List>
+                </PageSection>
             )}
             {item && (
-                <Box mt={3}>
-                    <H3>Meta</H3>
-                    <TableContainer component={Paper}>
-                        <Table size="small">
-                            <TableBody>
-                                {item.datetime && (
-                                    <TableRow>
-                                        <TableCell component="th">Observation</TableCell>
-                                        <TableCell>
-                                            {`${item.datetime}`.replace('T', ' ')}
-                                        </TableCell>
-                                    </TableRow>
+                <PageSection title="Meta">
+                    <List disablePadding>
+                        {item.datetime && (
+                            <ListItem>
+                                <ListItemText
+                                    primary="Observation"
+                                    secondary={`${item.datetime}`.replace('T', ' ')}
+                                />
+                            </ListItem>
+                        )}
+                        {item.photos && item.photos.length > 0 && (
+                            <>
+                                <ListItem>
+                                    <ListItemText
+                                        primary="Date-Time From Camera"
+                                        secondary={item.photo_datetime_used ? 'Yes' : 'No'}
+                                    />
+                                </ListItem>
+                                {item.non_identifying_photo && (
+                                    <ListItem>
+                                        <ListItemText
+                                            primary="Non-Identifying Photo"
+                                            secondary="Yes"
+                                        />
+                                    </ListItem>
                                 )}
-                                {item.photos && item.photos.length > 0 && (
-                                    <>
-                                        <TableRow>
-                                            <TableCell component="th">
-                                                Date-Time From Camera
-                                            </TableCell>
-                                            <TableCell>
-                                                {item.photo_datetime_used ? 'Yes' : 'No'}
-                                            </TableCell>
-                                        </TableRow>
-                                        {item.non_identifying_photo && (
-                                            <TableRow>
-                                                <TableCell component="th">
-                                                    Non-Identifying Photo
-                                                </TableCell>
-                                                <TableCell>Yes</TableCell>
-                                            </TableRow>
-                                        )}
-                                        {item.photo_quality && (
-                                            <TableRow>
-                                                <TableCell component="th">Photo Quality</TableCell>
-                                                <TableCell>{item.photo_quality}</TableCell>
-                                            </TableRow>
-                                        )}
-                                    </>
+                                {item.photo_quality && (
+                                    <ListItem>
+                                        <ListItemText
+                                            primay="Photo Quality"
+                                            secondary={item.photo_quality}
+                                        />
+                                    </ListItem>
                                 )}
-                                {item.latitude && item.longitude && (
-                                    <>
-                                        <TableRow>
-                                            <TableCell component="th">Location</TableCell>
-                                            <TableCell>
-                                                {parseFloat(item.latitude).toFixed(6)},{' '}
-                                                {parseFloat(item.longitude).toFixed(6)}
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell component="th">Photo Geo-Tag Used</TableCell>
-                                            <TableCell>
-                                                {item.photo_geotag_used ? 'Yes' : 'No'}
-                                            </TableCell>
-                                        </TableRow>
-                                    </>
-                                )}
-                                <TableRow>
-                                    <TableCell component="th">Created</TableCell>
-                                    <TableCell>
-                                        {item.created_at && item.created_at.split('T')[0]}
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell component="th">Updated</TableCell>
-                                    <TableCell>
-                                        {item.updated_at && item.updated_at.split('T')[0]}
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell component="th">Photo(s) License</TableCell>
-                                    <TableCell>
-                                        <LicenseLink license={item.license} />
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell component="th">Document License</TableCell>
-                                    <TableCell>
-                                        <LicenseLink license={item.license} />
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell component="th">External</TableCell>
-                                    <TableCell>
-                                        <ButtonGroup size="small">
-                                            <Button href={itemUrl} target="_blank">
-                                                YAML
+                            </>
+                        )}
+                        {item.latitude && item.longitude && (
+                            <>
+                                <ListItem>
+                                    <ListItemText
+                                        primary="Location"
+                                        secondary={`${parseFloat(item.latitude).toFixed(
+                                            6,
+                                        )} ${parseFloat(item.longitude).toFixed(6)}`}
+                                    />
+                                </ListItem>
+                                <ListItem>
+                                    <ListItemText
+                                        primary="Photo Geo-Tag Used"
+                                        secondary={item.photo_geotag_used ? 'Yes' : 'No'}
+                                    />
+                                </ListItem>
+                            </>
+                        )}
+                        <ListItem>
+                            <ListItemText
+                                primary="Created"
+                                secondary={item.created_at && item.created_at.split('T')[0]}
+                            />
+                        </ListItem>
+                        <ListItem>
+                            <ListItemText
+                                primary="Updated"
+                                secondary={item.updated_at && item.updated_at.split('T')[0]}
+                            />
+                        </ListItem>
+                        <ListItem>
+                            <ListItemText
+                                primary="Photo(s) License"
+                                secondary={<LicenseLink license={item.license} />}
+                            />
+                        </ListItem>
+                        <ListItem>
+                            <ListItemText
+                                primary="Document License"
+                                secondary={<LicenseLink license={item.license} />}
+                            />
+                        </ListItem>
+                        <ListItem>
+                            <ListItemText
+                                primary="Source File"
+                                secondary={
+                                    <ButtonGroup size="small">
+                                        <Button
+                                            href={itemUrl}
+                                            target="_blank"
+                                            startIcon={<FileIcon type="yaml" />}
+                                        >
+                                            YAML
+                                        </Button>
+                                        {githubUrl && (
+                                            <Button
+                                                href={githubUrl}
+                                                target="_blank"
+                                                startIcon={<FileIcon type="git" />}
+                                            >
+                                                GitHub
                                             </Button>
-                                            {githubUrl && (
-                                                <Button href={githubUrl} target="_blank">
-                                                    GitHub
-                                                </Button>
-                                            )}
-                                        </ButtonGroup>
-                                    </TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </Box>
+                                        )}
+                                    </ButtonGroup>
+                                }
+                            />
+                        </ListItem>
+                    </List>
+                </PageSection>
             )}
         </Layout>
     );

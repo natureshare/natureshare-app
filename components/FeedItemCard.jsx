@@ -62,7 +62,7 @@ const ItemCard = ({
             </CardMedia>
             <CardContent>
                 <Typography variant="body2" component="div" style={{ margin: 0 }}>
-                    {_meta.date || datePublished.split('T', 1)[0]}
+                    {_meta.date || (datePublished || '').split('T', 1)[0] || 'No date'}
                     {_geo && _geo.coordinates && (
                         <MapMarkerCheck
                             style={{ fontSize: 12, color: '#555', marginLeft: '3px' }}

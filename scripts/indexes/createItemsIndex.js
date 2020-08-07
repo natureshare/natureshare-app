@@ -8,11 +8,13 @@ import dotenv from 'dotenv';
 import _startCase from 'lodash/startCase.js';
 import _uniq from 'lodash/uniq.js';
 import _uniqBy from 'lodash/uniqBy.js';
+import _pickBy from 'lodash/pickBy.js';
 import _mapValues from 'lodash/mapValues.js';
 import _isArray from 'lodash/isArray.js';
 import _sortBy from 'lodash/sortBy.js';
 import _reverse from 'lodash/reverse.js';
 import _startsWith from 'lodash/startsWith.js';
+import _truncate from 'lodash/truncate.js';
 import omitNull from './utils/omitNull.js';
 import { writeFiles, writeFilesForEach, writeFilesIndex } from './utils/writeFiles.js';
 
@@ -32,7 +34,7 @@ const userUrl = (userDir) =>
         new URL(Path.join('.', userDir, '_index', 'items', 'index.json'), contentHost),
     )}`;
 
-const idNames = (ary) =>
+const mapIdNames = (ary) =>
     _uniq(
         ary
             .map((i) => (typeof i === 'object' ? i.name : i))
@@ -63,11 +65,14 @@ const loadItem = (userDir, f) => {
 
     const url = `${appHost}item?i=${encodeURIComponent(id)}`;
 
-    const title =
-        (_isArray(identifications) &&
-            ((identifications.length > 2 && `${identifications.length} species`) ||
-                idNames(identifications).join(', '))) ||
-        'Unidentified';
+    const idNames = _isArray(identifications) ? _uniq(mapIdNames(identifications)).sort() : null;
+
+    const title = _truncate(
+        (_isArray(idNames) &&
+            ((idNames.length > 2 && `${idNames.length} ids`) || idNames.join(', '))) ||
+            'Unidentified',
+        { length: 64 },
+    );
 
     const image =
         photos && photos.length !== 0
@@ -83,11 +88,7 @@ const loadItem = (userDir, f) => {
         date_published: createdAt,
         date_modified: updatedAt,
         tags: [
-            ...(_isArray(identifications) && identifications.length !== 0
-                ? _uniq(idNames(identifications))
-                      .sort()
-                      .map((i) => `id=${i}`)
-                : ['id=Unidentified']),
+            ...(_isArray(idNames) ? idNames.map((i) => `id=${i}`) : ['id=Unidentified']),
             ...(_isArray(tags) && tags.length !== 0
                 ? _uniq(tags)
                       .sort()
@@ -102,6 +103,8 @@ const loadItem = (userDir, f) => {
             imageCount: (photos && photos.length) || null,
             videoCount: (videos && videos.length) || null,
             audioCount: (audio && audio.length) || null,
+            // idCount: _isArray(idNames) ? _uniq(identifications).length : null,
+            // tagCount: _isArray(tags) ? tags.length : null,
         }),
     });
 
@@ -201,7 +204,10 @@ const build = (userDir) => {
         // User's collection items, one file for each collection:
 
         writeFilesForEach({
-            index: _mapValues(collectionsIndex, (i) => sortFeedItems(i.items)),
+            index: _pickBy(
+                _mapValues(collectionsIndex, (i) => sortFeedItems(i.items)),
+                (i) => i.length !== 0,
+            ),
             userDir,
             subDirCb: (i) => Path.join('collections', dirStr(i)),
             titleCb: (i) => collectionsIndex[i].title,
@@ -254,23 +260,25 @@ const build = (userDir) => {
                 } while (page <= pageCount);
             });
 
-            collectionsIndex[c].items = sortFeedItems(_uniqBy(collectionsIndex[c].items, 'id'));
+            if (collectionsIndex[c].items.length !== 0) {
+                collectionsIndex[c].items = sortFeedItems(_uniqBy(collectionsIndex[c].items, 'id'));
 
-            // Aggregate index:
+                // Aggregate index:
 
-            writeFiles({
-                userDir,
-                subDir: Path.join('collections', dirStr(c), 'aggregate'),
-                feedItems: collectionsIndex[c].items,
-                _title: collectionsIndex[c].title,
-                _description: collectionsIndex[c].description,
-            });
+                writeFiles({
+                    userDir,
+                    subDir: Path.join('collections', dirStr(c), 'aggregate'),
+                    feedItems: collectionsIndex[c].items,
+                    _title: collectionsIndex[c].title,
+                    _description: collectionsIndex[c].description,
+                });
+            }
         });
 
         // Index of all collections (this must be AFTER aggregation for accurate counts):
 
         writeFilesIndex({
-            index: _mapValues(collectionsIndex, 'items'),
+            index: _pickBy(_mapValues(collectionsIndex, 'items'), (i) => i.length !== 0),
             userDir,
             subDir: 'collections',
             _title: 'Collections',
