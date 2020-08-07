@@ -14,7 +14,6 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import { useRouter } from 'next/router';
 import queryString from 'query-string';
-import _last from 'lodash/last';
 import _startsWith from 'lodash/startsWith';
 import _endsWith from 'lodash/endsWith';
 import _sortBy from 'lodash/sortBy';
@@ -37,6 +36,7 @@ import AddCommentFormDialog from '../components/item/AddCommentFormDialog';
 import AddToCollectionFormDialog from '../components/item/AddToCollectionFormDialog';
 import { resolveUrl, fetchYaml, shortUrl } from '../utils/fetch';
 import FileIcon from '../components/FileIcon';
+import Video from '../components/item/Video';
 
 const PageSection = ({ title, children, actions }) => (
     <Accordion defaultExpanded>
@@ -56,7 +56,6 @@ export default function Item() {
     const [itemUrl, setItemUrl] = useState();
     const [sourceUrl, setSourceUrl] = useState();
     const [userItemsUrl, setUserItemsUrl] = useState();
-    const [profileUrl, setProfileUrl] = useState(null);
 
     const [userName, setUserName] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
@@ -65,7 +64,7 @@ export default function Item() {
     const [geo, setGeo] = useState(null);
 
     const [showMedia, setShowMedia] = useState(false);
-    const [showPhoto, setShowPhoto] = useState();
+    const [showPhoto, setShowPhoto] = useState(false);
 
     const itemsParams = (p, t) => {
         if (itemUrl) {
@@ -114,7 +113,6 @@ export default function Item() {
             setUserItemsUrl(resolveUrl('../../../_index/items/index.json', _itemUrl));
 
             const _profileUrl = resolveUrl('../../../profile.yaml', _itemUrl);
-            setProfileUrl(_profileUrl);
             fetchYaml(_profileUrl).then((obj) => obj && setUserProfile(obj));
 
             setUserName(new URL('.', _profileUrl).pathname.split('/', 2)[1]);
@@ -137,14 +135,12 @@ export default function Item() {
         <Layout title={userName} href={`/items?i=${shortUrl(userItemsUrl)}`}>
             <H1>
                 {(item && item.datetime && item.datetime.replace('T', ' ').replace('Z', '')) ||
+                    (item &&
+                        item.created_at &&
+                        item.created_at.replace('T', ' ').replace('Z', '')) ||
                     'Loading...'}
             </H1>
-            <H2>
-                by{' '}
-                {(userProfile && userProfile.name) ||
-                    (profileUrl && _last(profileUrl.split('/'))) ||
-                    'Loading...'}
-            </H2>
+            <H2>by {(userProfile && userProfile.name) || userName}</H2>
             {item && item.photos && item.photos.length > 0 && (
                 <Box mt={3} mb={3}>
                     <Grid
@@ -155,7 +151,12 @@ export default function Item() {
                         spacing={2}
                     >
                         {_sortBy(item.photos, ['primary']).map(
-                            ({ original_url: original, thumbnail_url: thumbnail }) => (
+                            ({
+                                original_url: original,
+                                thumbnail_url: thumbnail,
+                                source,
+                                href,
+                            }) => (
                                 <Grid key={thumbnail} item xs={12} sm={6}>
                                     <Card>
                                         <a
@@ -180,8 +181,13 @@ export default function Item() {
                                                     return true;
                                                 }}
                                             >
-                                                original file
+                                                Full Size
                                             </Button>
+                                            {href && (
+                                                <Button size="small" href={href} target="_blank">
+                                                    {source || 'Link'}
+                                                </Button>
+                                            )}
                                         </CardActions>
                                     </Card>
                                 </Grid>
@@ -221,16 +227,11 @@ export default function Item() {
                         </Button>
                     )}
                     {showMedia &&
-                        item.videos.map(({ original_url: original, thumbnail_url: thumbnail }) => (
-                            <video
-                                key={original}
-                                controls
-                                src={original}
-                                poster={thumbnail}
-                                style={{ width: '100%' }}
-                            >
-                                [Video Not Supported]
-                            </video>
+                        item.videos.map((video) => (
+                            <Video
+                                key={video.thumbnail_url || `${video.source}${video.id}`}
+                                {...video}
+                            />
                         ))}
                 </PageSection>
             )}
@@ -492,34 +493,25 @@ export default function Item() {
                                 secondary={<LicenseLink license={item.license} />}
                             />
                         </ListItem>
-                        <ListItem>
-                            <ListItemText
-                                primary="Source File"
-                                secondary={
-                                    <ButtonGroup size="small">
-                                        <Button
-                                            href={itemUrl}
-                                            target="_blank"
-                                            startIcon={<FileIcon type="yaml" />}
-                                        >
-                                            YAML
-                                        </Button>
-                                        {githubUrl && (
-                                            <Button
-                                                href={githubUrl}
-                                                target="_blank"
-                                                startIcon={<FileIcon type="git" />}
-                                            >
-                                                GitHub
-                                            </Button>
-                                        )}
-                                    </ButtonGroup>
-                                }
-                            />
-                        </ListItem>
                     </List>
                 </PageSection>
             )}
+            <Box mt={3} mb={5} style={{ textAlign: 'center' }}>
+                <ButtonGroup size="small">
+                    <Button href={itemUrl} target="_blank" startIcon={<FileIcon type="yaml" />}>
+                        YAML
+                    </Button>
+                    {githubUrl && (
+                        <Button
+                            href={githubUrl}
+                            target="_blank"
+                            startIcon={<FileIcon type="git" />}
+                        >
+                            GitHub
+                        </Button>
+                    )}
+                </ButtonGroup>
+            </Box>
         </Layout>
     );
 }

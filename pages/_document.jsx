@@ -22,6 +22,7 @@ export default class MyDocument extends Document {
                     <Main />
                     {/* See leaflet.webpack.config.js */}
                     <script src="/leaflet.js" />
+                    <script async src="//embedr.flickr.com/assets/client-code.js" charSet="utf-8" />
                     <NextScript />
                 </body>
             </Html>

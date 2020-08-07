@@ -42,7 +42,7 @@ export default function GeoJsonMap({ geo }) {
                 animate: false,
                 animateAddingMarkers: false,
                 chunkedLoading: true,
-                zoomToBoundsOnClick: false,
+                zoomToBoundsOnClick: true,
             });
 
             geoBaseLayer.current.on('clusterclick', (e) => {
@@ -56,7 +56,7 @@ export default function GeoJsonMap({ geo }) {
             lMap.current = window.L.map(container, {
                 center: [0, 0],
                 zoom: 1,
-                scrollWheelZoom: false,
+                scrollWheelZoom: true,
                 fullscreenControl: {
                     pseudoFullscreen: true,
                 },
