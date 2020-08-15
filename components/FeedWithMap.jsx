@@ -9,7 +9,6 @@ import _lines from 'underscore.string/lines';
 import _startsWith from 'lodash/startsWith';
 import _mapValues from 'lodash/mapValues';
 import _orderBy from 'lodash/orderBy';
-import _set from 'lodash/set';
 import _get from 'lodash/get';
 import Pagination from '@material-ui/lab/Pagination';
 import { resolveUrl, fetchJson, shortUrl } from '../utils/fetch';
@@ -158,11 +157,7 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
         () =>
             itemsSort[0] === 'default'
                 ? itemsFiltered
-                : _orderBy(
-                      itemsFiltered.map((i) => _set(i, itemsSort[0], _get(i, itemsSort[0], ''))),
-                      [itemsSort[0]],
-                      [itemsSort[1]],
-                  ),
+                : _orderBy(itemsFiltered, [(i) => _get(i, itemsSort[0], '')], [itemsSort[1]]),
         [itemsFiltered, itemsSort],
     );
 
@@ -262,7 +257,15 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
                 <GeoJsonMap geo={geo} />
             </Box>
             <Box mt={1}>
-                <FeedSortControls {...{ itemsSort, setItemsSort, itemsFilter, setItemsFilter }} />
+                <FeedSortControls
+                    {...{
+                        length: itemsFiltered.length,
+                        itemsSort,
+                        setItemsSort,
+                        itemsFilter,
+                        setItemsFilter,
+                    }}
+                />
             </Box>
             <Box pt={1} id="feedItemsGrid">
                 {feed.title && itemsPage.length === 0 && <P>No items.</P>}

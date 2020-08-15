@@ -16,7 +16,13 @@ const filterNext = {
     no: '',
 };
 
-export default function FeedSortControls({ itemsSort, setItemsSort, itemsFilter, setItemsFilter }) {
+export default function FeedSortControls({
+    length,
+    itemsSort,
+    setItemsSort,
+    itemsFilter,
+    setItemsFilter,
+}) {
     const sortOptions = {
         Title: 'title',
         'Date Published': 'date_published',
@@ -74,7 +80,7 @@ export default function FeedSortControls({ itemsSort, setItemsSort, itemsFilter,
                     defaultValue="default"
                 >
                     <MenuItem value="default">
-                        <em>Default</em>
+                        <em>Sort</em>
                     </MenuItem>
                     {Object.keys(sortOptions).map((i) => (
                         <MenuItem key={i} value={sortOptions[i]}>
@@ -106,6 +112,9 @@ export default function FeedSortControls({ itemsSort, setItemsSort, itemsFilter,
                     </IconButton>
                 </Grid>
             ))}
+            <Grid item style={{ marginLeft: '10px' }}>
+                {length} items
+            </Grid>
         </Grid>
     );
 }
