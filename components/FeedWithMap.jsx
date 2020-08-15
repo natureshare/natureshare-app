@@ -8,6 +8,9 @@ import Head from 'next/head';
 import _lines from 'underscore.string/lines';
 import _startsWith from 'lodash/startsWith';
 import _mapValues from 'lodash/mapValues';
+import _orderBy from 'lodash/orderBy';
+import _set from 'lodash/set';
+import _get from 'lodash/get';
 import Pagination from '@material-ui/lab/Pagination';
 import { resolveUrl, fetchJson, shortUrl } from '../utils/fetch';
 import FeedItemsGrid from './FeedItemsGrid';
@@ -15,6 +18,7 @@ import GeoJsonMap from './GeoJsonMap';
 import Layout from './Layout';
 import { H1, P } from './Typography';
 import FileIcon from './FileIcon';
+import FeedSortControls from './FeedSortControls';
 
 const PER_PAGE = 52;
 
@@ -46,6 +50,9 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
     const [feed, setFeed] = useState({});
+
+    const [itemsSort, setItemsSort] = useState(['', '']);
+    const [itemsFilter, setItemsFilter] = useState({});
 
     const reset = () => {
         setError(null);
@@ -90,10 +97,20 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
 
     const itemsFiltered = useMemo(() => {
         if (feed && feed.items && feed.items.length !== 0) {
+            let { items } = feed;
+
+            Object.keys(itemsFilter).forEach((k) => {
+                if (itemsFilter[k]) {
+                    items = items.filter(
+                        (i) => (itemsFilter[k] === 'yes') === Boolean(_get(i, k, false)),
+                    );
+                }
+            });
+
             const prefix = tagPrefix ? `${tagPrefix}=` : '';
 
             if (tag === '~') {
-                const tagGroups = feed.items.reduce((acc, item) => {
+                const tagGroups = items.reduce((acc, item) => {
                     if (item.tags) {
                         item.tags.forEach((t) => {
                             if (t && _startsWith(t, prefix)) {
@@ -129,16 +146,28 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
             }
 
             if (tag) {
-                return feed.items.filter(({ tags }) => tags && tags.includes(prefix + tag));
+                return items.filter(({ tags }) => tags && tags.includes(prefix + tag));
             }
 
-            return feed.items;
+            return items;
         }
         return [];
-    }, [feed, tag, tagPrefix]);
+    }, [feed, tag, tagPrefix, itemsFilter]);
 
-    const itemsPage = useMemo(() => itemsFiltered.slice((page - 1) * PER_PAGE, page * PER_PAGE), [
-        itemsFiltered,
+    const itemsSorted = useMemo(
+        () =>
+            !itemsSort[0]
+                ? itemsFiltered
+                : _orderBy(
+                      itemsFiltered.map((i) => _set(i, itemsSort[0], _get(i, itemsSort[0], ''))),
+                      [itemsSort[0]],
+                      [itemsSort[1] || 'desc'],
+                  ),
+        [itemsFiltered, itemsSort],
+    );
+
+    const itemsPage = useMemo(() => itemsSorted.slice((page - 1) * PER_PAGE, page * PER_PAGE), [
+        itemsSorted,
         page,
     ]);
 
@@ -229,6 +258,9 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
                 </>
             )}
             {children && children(itemsFiltered)}
+            <Box mt={3}>
+                <FeedSortControls {...{ itemsSort, setItemsSort, itemsFilter, setItemsFilter }} />
+            </Box>
             <Box mt={3}>
                 <GeoJsonMap geo={geo} />
             </Box>
