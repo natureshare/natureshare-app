@@ -1,21 +1,22 @@
-import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import { useEffect } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
 import _fromPairs from 'lodash/fromPairs';
+import IconButton from '@material-ui/core/IconButton';
+import SortAscendingIcon from 'mdi-material-ui/SortAlphabeticalAscending';
+import SortDescendingIcon from 'mdi-material-ui/SortAlphabeticalDescending';
+import ImageIcon from 'mdi-material-ui/Camera';
+import MapMarkerIcon from 'mdi-material-ui/MapMarkerCheckOutline';
+import Badge from '@material-ui/core/Badge';
+import Grid from '@material-ui/core/Grid';
 
-const useStyles = makeStyles((theme) => ({
-    formControl: {
-        marginRight: theme.spacing(2),
-        minWidth: 100,
-    },
-}));
+const filterNext = {
+    '': 'yes',
+    yes: 'no',
+    no: '',
+};
 
 export default function FeedSortControls({ itemsSort, setItemsSort, itemsFilter, setItemsFilter }) {
-    const classes = useStyles();
-
     const sortOptions = {
         Title: 'title',
         'Date Published': 'date_published',
@@ -37,6 +38,11 @@ export default function FeedSortControls({ itemsSort, setItemsSort, itemsFilter,
         Location: '_geo.coordinates',
     };
 
+    const filterIcons = {
+        Image: <ImageIcon />,
+        Location: <MapMarkerIcon />,
+    };
+
     useEffect(() => {
         setItemsFilter({
             ...itemsFilter,
@@ -45,17 +51,29 @@ export default function FeedSortControls({ itemsSort, setItemsSort, itemsFilter,
     }, []);
 
     return (
-        <>
-            <FormControl className={classes.formControl}>
-                <InputLabel id="labelSortBy">Sort By</InputLabel>
+        <Grid container direction="row" justify="flex-start" alignItems="center">
+            <Grid item>
+                <IconButton
+                    disabled={itemsSort[0] === 'default'}
+                    color="primary"
+                    onClick={() =>
+                        setItemsSort([itemsSort[0], itemsSort[1] === 'asc' ? 'desc' : 'asc'])
+                    }
+                >
+                    {itemsSort[1] === 'asc' && <SortAscendingIcon />}
+                    {itemsSort[1] === 'desc' && <SortDescendingIcon />}
+                </IconButton>
+            </Grid>
+            <Grid item style={{ paddingRight: '10px' }}>
                 <Select
                     labelId="labelSortBy"
                     value={itemsSort[0]}
                     onChange={(event) => setItemsSort([event.target.value, itemsSort[1]])}
                     label="Sort By"
                     autoWidth
+                    defaultValue="default"
                 >
-                    <MenuItem value="">
+                    <MenuItem value="default">
                         <em>Default</em>
                     </MenuItem>
                     {Object.keys(sortOptions).map((i) => (
@@ -64,45 +82,30 @@ export default function FeedSortControls({ itemsSort, setItemsSort, itemsFilter,
                         </MenuItem>
                     ))}
                 </Select>
-            </FormControl>
-            <FormControl className={classes.formControl}>
-                <InputLabel id="labelSortDirection">Order</InputLabel>
-                <Select
-                    labelId="labelSortDirection"
-                    value={itemsSort[1]}
-                    onChange={(event) => setItemsSort([itemsSort[0], event.target.value])}
-                    label="Order"
-                    autoWidth
-                >
-                    <MenuItem value="">
-                        <em>Default</em>
-                    </MenuItem>
-                    <MenuItem value="asc">Reverse</MenuItem>
-                </Select>
-            </FormControl>
+            </Grid>
             {Object.keys(filterOptions).map((i) => (
-                <FormControl key={i} className={classes.formControl}>
-                    <InputLabel id="labelHasImage">{i}</InputLabel>
-                    <Select
-                        labelId="labelHasImage"
-                        value={itemsFilter[filterOptions[i]] || ''}
-                        onChange={(event) =>
+                <Grid item>
+                    <IconButton
+                        onClick={() =>
                             setItemsFilter({
                                 ...itemsFilter,
-                                [filterOptions[i]]: event.target.value,
+                                [filterOptions[i]]: filterNext[itemsFilter[filterOptions[i]]],
                             })
                         }
-                        label={i}
-                        autoWidth
                     >
-                        <MenuItem value="">
-                            <em>Default</em>
-                        </MenuItem>
-                        <MenuItem value="yes">Yes</MenuItem>
-                        <MenuItem value="no">No</MenuItem>
-                    </Select>
-                </FormControl>
+                        <Badge
+                            badgeContent={itemsFilter[filterOptions[i]]}
+                            invisible={itemsFilter[filterOptions[i]] === ''}
+                            color="primary"
+                            style={{
+                                color: itemsFilter[filterOptions[i]] === '' ? 'inherit' : '#558b2f',
+                            }}
+                        >
+                            {filterIcons[i]}
+                        </Badge>
+                    </IconButton>
+                </Grid>
             ))}
-        </>
+        </Grid>
     );
 }

@@ -51,7 +51,7 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
     const [page, setPage] = useState(1);
     const [feed, setFeed] = useState({});
 
-    const [itemsSort, setItemsSort] = useState(['', '']);
+    const [itemsSort, setItemsSort] = useState(['default', 'desc']);
     const [itemsFilter, setItemsFilter] = useState({});
 
     const reset = () => {
@@ -156,12 +156,12 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
 
     const itemsSorted = useMemo(
         () =>
-            !itemsSort[0]
+            itemsSort[0] === 'default'
                 ? itemsFiltered
                 : _orderBy(
                       itemsFiltered.map((i) => _set(i, itemsSort[0], _get(i, itemsSort[0], ''))),
                       [itemsSort[0]],
-                      [itemsSort[1] || 'desc'],
+                      [itemsSort[1]],
                   ),
         [itemsFiltered, itemsSort],
     );
@@ -259,12 +259,12 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
             )}
             {children && children(itemsFiltered)}
             <Box mt={3}>
-                <FeedSortControls {...{ itemsSort, setItemsSort, itemsFilter, setItemsFilter }} />
-            </Box>
-            <Box mt={3}>
                 <GeoJsonMap geo={geo} />
             </Box>
-            <Box pt={3} id="feedItemsGrid">
+            <Box mt={1}>
+                <FeedSortControls {...{ itemsSort, setItemsSort, itemsFilter, setItemsFilter }} />
+            </Box>
+            <Box pt={1} id="feedItemsGrid">
                 {feed.title && itemsPage.length === 0 && <P>No items.</P>}
                 <FeedItemsGrid items={itemsPage} hideTitle={tag} sourceUrl={shortUrl(url)} />
             </Box>
