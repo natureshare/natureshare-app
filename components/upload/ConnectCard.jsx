@@ -1,4 +1,4 @@
-/* global process URL */
+/* global process URL Headers */
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -12,19 +12,64 @@ import Button from '@material-ui/core/Button';
 import UpdateIcon from 'mdi-material-ui/CloudUpload';
 import ConnectIcon from 'mdi-material-ui/SwapHorizontalBold';
 import HelpIcon from 'mdi-material-ui/HelpCircle';
-import { useContext, useMemo } from 'react';
+import { useState, useContext, useMemo } from 'react';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import { UserContext } from '../User';
 import ActionFormDialog from '../ActionFormDialog';
 
 export default function ConnectCard({ id, avatar, title, subheader, body }) {
-    const [user] = useContext(UserContext);
+    const [user, setUser] = useContext(UserContext);
+    const [menu, setMenu] = useState(null);
 
     const connected = useMemo(() => user && user.data && user.data.oauth && user.data.oauth[id], [
         user,
     ]);
 
+    const openMenu = (event) => {
+        setMenu(event.currentTarget);
+    };
+
+    const closeMenu = () => {
+        setMenu(null);
+    };
+
+    const disconnect = () => {
+        closeMenu();
+
+        if (window && typeof window === 'object') {
+            const headers = new Headers();
+
+            if (window.localStorage) {
+                const token = window.localStorage.getItem('userToken');
+                if (token) {
+                    headers.set('Authorization', `Bearer ${token}`);
+                }
+            }
+
+            if (process.env.apiHost)
+                window
+                    .fetch(new URL(`/user/oauth/${id}`, process.env.apiHost).href, {
+                        method: 'DELETE',
+                        credentials: 'include',
+                        headers,
+                    })
+                    .then(() => setUser(null))
+                    .catch(() => {});
+        }
+    };
+
     return (
         <Card>
+            <Menu
+                id="simple-menu"
+                anchorEl={menu}
+                keepMounted
+                open={Boolean(menu)}
+                onClose={closeMenu}
+            >
+                <MenuItem onClick={disconnect}>Disconnect</MenuItem>
+            </Menu>
             <CardHeader
                 avatar={
                     <Avatar alt="" src={avatar} variant="square">
@@ -32,9 +77,11 @@ export default function ConnectCard({ id, avatar, title, subheader, body }) {
                     </Avatar>
                 }
                 action={
-                    <IconButton aria-label="settings">
-                        <MoreVertIcon />
-                    </IconButton>
+                    connected && (
+                        <IconButton onClick={openMenu}>
+                            <MoreVertIcon />
+                        </IconButton>
+                    )
                 }
                 title={<strong>{title}</strong>}
                 subheader={subheader}
