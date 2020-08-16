@@ -32,7 +32,7 @@ export default function FormDialog({
     source,
     setSource,
     onSave,
-    saveButtonText = 'Save',
+    saveButtonText = 'Submit',
 }) {
     const [data, updateData] = useReducer((obj1, obj2) => ({ ...obj1, ...obj2 }), {});
     const [active, setActive] = useState(false);

@@ -138,6 +138,7 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
                             coordinates: averageCoord(group),
                         },
                         _meta: {
+                            date: group[0].date_published.split('T', 1)[0],
                             itemCount: group.length,
                         },
                     })),

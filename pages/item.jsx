@@ -32,8 +32,7 @@ import Link from '../components/Link';
 import Layout from '../components/Layout';
 import GeoJsonMap from '../components/GeoJsonMap';
 import LicenseLink from '../components/LicenseLink';
-import AddCommentFormDialog from '../components/item/AddCommentFormDialog';
-import AddToCollectionFormDialog from '../components/item/AddToCollectionFormDialog';
+import ActionFormDialog from '../components/ActionFormDialog';
 import { resolveUrl, fetchYaml, shortUrl } from '../utils/fetch';
 import FileIcon from '../components/FileIcon';
 import Video from '../components/item/Video';
@@ -320,11 +319,22 @@ export default function Item() {
                 <PageSection
                     title="Collections"
                     actions={
-                        <AddToCollectionFormDialog
-                            data={{
+                        <ActionFormDialog
+                            {...{
+                                title: 'Add to Collection',
                                 url: window.location.href,
                                 action: 'itemToCollection',
                                 target: itemUrl,
+                                fields: {
+                                    collection: {
+                                        label: 'Collection Name',
+                                        autoFocus: true,
+                                        inputLabelProps: { shrink: true },
+                                        multiline: true,
+                                        helperText:
+                                            'Lowercase letters, numbers, dashes and underscores are allowed.',
+                                    },
+                                },
                             }}
                         />
                     }
@@ -364,12 +374,21 @@ export default function Item() {
                 <PageSection
                     title="Discussion"
                     actions={
-                        <AddCommentFormDialog
-                            data={{
-                                recipient: userName,
+                        <ActionFormDialog
+                            {...{
+                                title: 'Add a Comment',
                                 url: window.location.href,
                                 action: 'itemComment',
                                 target: itemUrl,
+                                recipient: userName,
+                                fields: {
+                                    comment: {
+                                        label: 'Comment',
+                                        autoFocus: true,
+                                        inputLabelProps: { shrink: true },
+                                        multiline: true,
+                                    },
+                                },
                             }}
                         />
                     }

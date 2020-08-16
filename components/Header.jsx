@@ -1,4 +1,4 @@
-/* global process */
+/* global process URL */
 
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -16,6 +16,7 @@ import HomeIcon from 'mdi-material-ui/Home';
 import LogInIcon from 'mdi-material-ui/Login';
 import LogOutIcon from 'mdi-material-ui/Logout';
 import AboutIcon from 'mdi-material-ui/Information';
+import UploadIcon from 'mdi-material-ui/CloudUpload';
 import PersonIcon from '@material-ui/icons/Person';
 import ChevronRightIcon from 'mdi-material-ui/ChevronRight';
 import Hidden from '@material-ui/core/Hidden';
@@ -31,6 +32,21 @@ export default function Header({ title, href }) {
     const [openNewUserForm, setOpenNewUserForm] = useState(false);
 
     const [user, setUser] = useContext(UserContext);
+
+    const logOut = () => {
+        setUser({});
+        if (window && typeof window === 'object') {
+            window.localStorage.removeItem('userToken');
+            if (process.env.apiHost)
+                window
+                    .fetch(new URL('/auth', process.env.apiHost).href, {
+                        credentials: 'include',
+                        method: 'DELETE',
+                    })
+                    .then(() => {})
+                    .catch(() => {});
+        }
+    };
 
     return (
         <>
@@ -116,19 +132,26 @@ export default function Header({ title, href }) {
                                 )}
                                 {user && user.name && (
                                     <>
+                                        {user.name === 'reilly' && (
+                                            <ListItem
+                                                button
+                                                component={Link}
+                                                href="/upload"
+                                                as="/upload"
+                                            >
+                                                <ListItemIcon>
+                                                    <UploadIcon />
+                                                </ListItemIcon>
+                                                <ListItemText primary="Upload" />
+                                            </ListItem>
+                                        )}
                                         <ListItem button onClick={() => setOpenUserForm(true)}>
                                             <ListItemIcon>
                                                 <PersonIcon />
                                             </ListItemIcon>
                                             <ListItemText primary="Account" />
                                         </ListItem>
-                                        <ListItem
-                                            button
-                                            onClick={() => {
-                                                window.localStorage.removeItem('userToken');
-                                                setUser({});
-                                            }}
-                                        >
+                                        <ListItem button onClick={logOut}>
                                             <ListItemIcon>
                                                 <LogOutIcon />
                                             </ListItemIcon>

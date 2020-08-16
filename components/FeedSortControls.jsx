@@ -90,7 +90,7 @@ export default function FeedSortControls({
                 </Select>
             </Grid>
             {Object.keys(filterOptions).map((i) => (
-                <Grid item>
+                <Grid item key={i}>
                     <IconButton
                         onClick={() =>
                             setItemsFilter({
