@@ -130,7 +130,6 @@ export default function Upload() {
                     </Grid>
                 </Grid>
             </Box>
-            <Box mt={3}>{user && JSON.stringify(user)}</Box>
         </Layout>
     );
 }
