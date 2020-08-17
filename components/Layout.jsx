@@ -16,7 +16,7 @@ export default function Layout({ title, href, windowTitle, children }) {
             </Head>
             <Header title={title} href={href} />
             <Container maxWidth="md" mt={3}>
-                <Box mt={2} mb={3}>
+                <Box mt={2} mb={15}>
                     {children}
                 </Box>
             </Container>

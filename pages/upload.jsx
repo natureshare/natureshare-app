@@ -109,8 +109,7 @@ export default function Upload() {
                                 <>
                                     When you connect to DropBox, a new folder will be created under{' '}
                                     <em>Apps &raquo; NatureShare</em>. NatureShare will only be able
-                                    to access just the photos you intentionally place in that
-                                    folder.
+                                    to access the files you place in that new folder.
                                 </>
                             }
                         />

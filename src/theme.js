@@ -7,19 +7,19 @@ const theme = createMuiTheme({
     typography: {
         h1: {
             fontSize: '2rem',
-            fontWeight: 500,
+            fontWeight: 600,
         },
         h2: {
             fontSize: '1.4rem',
-            fontWeight: 500,
+            fontWeight: 600,
         },
         h3: {
             fontSize: '1.2rem',
-            fontWeight: 500,
+            fontWeight: 600,
         },
         h4: {
-            fontSize: '1.0rem',
-            fontWeight: 500,
+            fontSize: '1.1rem',
+            fontWeight: 600,
         },
         body1: {
             fontSize: '1.0rem',

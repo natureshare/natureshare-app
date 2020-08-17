@@ -58,7 +58,13 @@ export default function Help({ topic, content }) {
                                 )}
                                 {step.text && step.text.split('\n').map((t) => <P>{t}</P>)}
                                 {step.code && (
-                                    <Box mt={3} px={2} py={1} component={Paper}>
+                                    <Box
+                                        mt={3}
+                                        px={2}
+                                        py={1}
+                                        component={Paper}
+                                        style={{ overflowX: 'scroll' }}
+                                    >
                                         <pre>
                                             <code>{step.code}</code>
                                         </pre>

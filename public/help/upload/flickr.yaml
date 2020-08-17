@@ -61,13 +61,13 @@ sections:
         text: |
             To group a set of photos, give them all the same title.
             Then, set the order of the photos by adding "~" (tilde) and a number at the end of each title.
-            For example, three photos might have the titles: "filename", "filename~2" and "filename~3".
+            For example, three photos would have the titles: "filename", "filename~2" and "filename~3".
             (The tilde can be found near the top-left of most keyboards.)
-            Note, only the first photos must have the NatureShare metadata description.
+            Note, only the first photo must have the NatureShare metadata description.
       - title: On Your Computer
         text: |
             When you upload photos to Flickr, the original filename will be used as the title.
-            So you can save some time by first renaming the files on your computer or camera, before uploading them.
+            This means you can save some by first renaming the files on your computer or camera, before uploading them.
 
   - title: Sync
     steps:
