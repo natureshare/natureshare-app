@@ -242,7 +242,7 @@ export default function FormDialog({
                 open={errors && Object.keys(errors).length !== 0 && openErrorsDialog}
                 onClose={() => setOpenErrorsDialog(false)}
                 fullWidth
-                maxWidth="sm"
+                maxWidth="xs"
             >
                 <DialogTitle>Please Review</DialogTitle>
                 <DialogContent>
@@ -270,7 +270,7 @@ export default function FormDialog({
                 <DialogContent>
                     {description && (
                         <Box mb={3}>
-                            <Typography variant="body2">{description}</Typography>
+                            <Typography variant="body1">{description}</Typography>
                         </Box>
                     )}
                     {Object.keys(fields)
