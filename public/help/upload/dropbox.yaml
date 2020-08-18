@@ -4,8 +4,10 @@ sections:
     steps:
       - image: ./dropbox/connect.png
         text: |
-          On the upload page (found the in side menu), click the *CONNECT* button for Dropbox.
-          You will then be redirected to the **official** Dropbox website.
+          Go to the upload page (also found the in side menu):
+          https://natureshare.org.au/upload
+
+          Click on the *CONNECT* button for Dropbox you will then be redirected to the **official** Dropbox website.
 
       - title: Auth
         text: |
