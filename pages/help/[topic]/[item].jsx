@@ -1,11 +1,15 @@
+/* eslint-disable react/no-danger */
+
 import glob from 'glob';
 import path from 'path';
 import Box from '@material-ui/core/Box';
 import Paper from '@material-ui/core/Paper';
 import fs from 'fs';
 import yaml from 'js-yaml';
+import MarkdownIt from 'markdown-it';
+import Typography from '@material-ui/core/Typography';
 import Layout from '../../../components/Layout';
-import { H1, H2, H3, H4, P } from '../../../components/Typography';
+import { H1, H2, H3, H4 } from '../../../components/Typography';
 
 export const getStaticPaths = async () => {
     return {
@@ -32,6 +36,8 @@ export async function getStaticProps({ params }) {
 }
 
 export default function Help({ topic, content }) {
+    const md = new MarkdownIt({ html: false, breaks: true, linkify: true });
+
     return (
         <Layout title="Help" href={`/help/${topic}`}>
             <H1>
@@ -56,7 +62,15 @@ export default function Help({ topic, content }) {
                                         </Paper>
                                     </Box>
                                 )}
-                                {step.text && step.text.split('\n').map((t) => <P>{t}</P>)}
+                                {step.text && (
+                                    <Typography variant="body1">
+                                        <div
+                                            dangerouslySetInnerHTML={{
+                                                __html: md.render(step.text),
+                                            }}
+                                        />
+                                    </Typography>
+                                )}
                                 {step.code && (
                                     <Box
                                         mt={3}
