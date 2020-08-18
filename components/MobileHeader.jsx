@@ -17,10 +17,13 @@ export default function MobileHeader() {
 
             <meta name="apple-mobile-web-app-capable" content="yes" />
             <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-            <meta name="apple-mobile-web-app-title" content={process.env.appShortName} />
+            <meta name="apple-mobile-web-app-title" content={process.env.appName} />
+
             <meta name="description" content="Sharing the natural world." />
+
             <meta name="format-detection" content="telephone=no" />
             <meta name="mobile-web-app-capable" content="yes" />
+
             <meta
                 name="viewport"
                 content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, user-scalable=no, viewport-fit=cover"
