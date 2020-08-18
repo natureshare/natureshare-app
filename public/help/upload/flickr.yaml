@@ -36,6 +36,8 @@ sections:
           The description must start with "--- #natureshare.org".
           Id, description and tags are *not* required. For example, if you do not know the id (species), remove that line from the description.
           License *is* required and must be set to "CC BY 4.0" as NatureShare is all about sharing and only accepts openly licensed content.
+          For assistance creating the metadata text, please go to:
+          https://natureshare.org.au/metadata
           Here is an example description:
         code: |
           --- #natureshare.org

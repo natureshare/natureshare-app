@@ -20,6 +20,7 @@ import UploadIcon from 'mdi-material-ui/CloudUpload';
 import PersonIcon from '@material-ui/icons/Person';
 import ChevronRightIcon from 'mdi-material-ui/ChevronRight';
 import Hidden from '@material-ui/core/Hidden';
+import FileCodeIcon from 'mdi-material-ui/FileCode';
 import Link from './Link';
 import LogInFormDialog from './LogInFormDialog';
 import UserFormDialog from './UserFormDialog';
@@ -132,19 +133,28 @@ export default function Header({ title, href }) {
                                 )}
                                 {user && user.name && (
                                     <>
-                                        {user.name === 'reilly' && (
-                                            <ListItem
-                                                button
-                                                component={Link}
-                                                href="/upload"
-                                                as="/upload"
-                                            >
-                                                <ListItemIcon>
-                                                    <UploadIcon />
-                                                </ListItemIcon>
-                                                <ListItemText primary="Upload" />
-                                            </ListItem>
-                                        )}
+                                        <ListItem
+                                            button
+                                            component={Link}
+                                            href="/upload"
+                                            as="/upload"
+                                        >
+                                            <ListItemIcon>
+                                                <UploadIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary="Upload" />
+                                        </ListItem>
+                                        <ListItem
+                                            button
+                                            component={Link}
+                                            href="/metadata"
+                                            as="/metadata"
+                                        >
+                                            <ListItemIcon>
+                                                <FileCodeIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary="Metadata" />
+                                        </ListItem>
                                         <ListItem button onClick={() => setOpenUserForm(true)}>
                                             <ListItemIcon>
                                                 <PersonIcon />
