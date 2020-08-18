@@ -3,6 +3,7 @@ const nextConfig = {
         appName: process.env.APP_NAME || 'NatureShare',
         appShortName: process.env.APP_SHORT_NAME || 'NS',
         appHost: process.env.APP_HOST || 'https://natureshare.org.au',
+        appTwitter: process.env.APP_TWITTER || '@natureshare',
 
         apiHost: process.env.API_HOST,
         passwordSalt: process.env.PASSWORD_SALT || 'ns1234',

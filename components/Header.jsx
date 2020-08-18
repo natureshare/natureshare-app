@@ -68,6 +68,10 @@ export default function Header({ title, href }) {
                         >
                             {title && (
                                 <>
+                                    <span
+                                        className="mdi mdi-flower"
+                                        style={{ marginRight: '-1px' }}
+                                    />
                                     <Hidden smDown>{process.env.appName}</Hidden>
                                     <Hidden mdUp>{process.env.appShortName}</Hidden>
                                 </>

@@ -5,6 +5,7 @@ import React from 'react';
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 import { ServerStyleSheets } from '@material-ui/core/styles';
 import theme from '../src/theme';
+import MobileHeader from '../components/MobileHeader';
 
 export default class MyDocument extends Document {
     render() {
@@ -21,6 +22,7 @@ export default class MyDocument extends Document {
                         rel="stylesheet"
                         href="//cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css"
                     />
+                    <MobileHeader />
                 </Head>
                 <body>
                     <Main />
