@@ -24,6 +24,7 @@
         "@material-ui/icons": "^4.9.1",
         "@material-ui/lab": "^4.0.0-alpha.56",
         "js-yaml": "^3.14.0",
+        "jsonschema": "^1.2.6",
         "leaflet": "^1.6.0",
         "leaflet-fullscreen": "^1.0.2",
         "leaflet.markercluster": "^1.4.1",
@@ -35,6 +36,7 @@
         "query-string": "^6.13.1",
         "react": "^16.13.1",
         "react-dom": "^16.13.1",
+        "react-json-tree": "^0.12.1",
         "underscore.string": "^3.3.5",
         "webpack-cli": "^3.3.12"
     },
