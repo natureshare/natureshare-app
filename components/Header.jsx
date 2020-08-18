@@ -131,30 +131,21 @@ export default function Header({ title, href }) {
                                         </ListItem>
                                     </>
                                 )}
+                                <ListItem button component={Link} href="/upload" as="/upload">
+                                    <ListItemIcon>
+                                        <UploadIcon />
+                                    </ListItemIcon>
+                                    <ListItemText primary="Upload" />
+                                </ListItem>
+                                <ListItem button component={Link} href="/metadata" as="/metadata">
+                                    <ListItemIcon>
+                                        <FileCodeIcon />
+                                    </ListItemIcon>
+                                    <ListItemText primary="Metadata" />
+                                </ListItem>
+
                                 {user && user.name && (
                                     <>
-                                        <ListItem
-                                            button
-                                            component={Link}
-                                            href="/upload"
-                                            as="/upload"
-                                        >
-                                            <ListItemIcon>
-                                                <UploadIcon />
-                                            </ListItemIcon>
-                                            <ListItemText primary="Upload" />
-                                        </ListItem>
-                                        <ListItem
-                                            button
-                                            component={Link}
-                                            href="/metadata"
-                                            as="/metadata"
-                                        >
-                                            <ListItemIcon>
-                                                <FileCodeIcon />
-                                            </ListItemIcon>
-                                            <ListItemText primary="Metadata" />
-                                        </ListItem>
                                         <ListItem button onClick={() => setOpenUserForm(true)}>
                                             <ListItemIcon>
                                                 <PersonIcon />
