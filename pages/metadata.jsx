@@ -4,7 +4,7 @@ import yaml from 'js-yaml';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import JSONTree from 'react-json-tree';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
 import jsonschema from 'jsonschema';
@@ -12,13 +12,11 @@ import ArrowRightIcon from 'mdi-material-ui/ArrowRightThick';
 import ArrowDownIcon from 'mdi-material-ui/ArrowDownThick';
 import Hidden from '@material-ui/core/Hidden';
 import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import _uniq from 'lodash/uniq';
 import Layout from '../components/Layout';
 import { H1, H2 } from '../components/Typography';
+import LocationFormDialog from '../components/LocationFormDialog';
+import Prompt from '../components/Prompt';
 
 export async function getStaticProps() {
     return {
@@ -56,43 +54,14 @@ const labelRenderer = (keyPath, nodeType, expanded, expandable) => (
 );
 /* eslint-enable eqeqeq */
 
-function Prompt({ open, setOpen, title, callback }) {
-    const [text, setText] = useState('');
-
-    useEffect(() => setText(''), [open]);
-
-    return (
-        <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
-            <DialogTitle id="form-dialog-title">{(title || '').replace(/s$/, '')}</DialogTitle>
-            <DialogContent>
-                <TextField
-                    autoFocus
-                    margin="dense"
-                    multiline
-                    fullWidth
-                    value={text}
-                    onChange={(event) => setText(event.target.value)}
-                />
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={() => setOpen(false)} color="primary">
-                    Cancel
-                </Button>
-                <Button onClick={() => callback(text)} color="primary">
-                    Save
-                </Button>
-            </DialogActions>
-        </Dialog>
-    );
-}
-
-export default function Validator({ schemaYaml }) {
+export default function Metadata({ schemaYaml }) {
     const validator = new jsonschema.Validator();
     const { definitions, ...schema } = yaml.safeLoad(schemaYaml);
 
     const [text, setText] = useState('--- #natureshare.org\nlicense: CC BY 4.0\n');
 
     const [openPrompt, setOpenPrompt] = useState(false);
+    const [openLocation, setOpenLocation] = useState(false);
 
     const data = useMemo(() => {
         if (!/^--- #natureshare.org/.test(text)) {
@@ -139,13 +108,36 @@ export default function Validator({ schemaYaml }) {
         setOpenPrompt(false);
     };
 
+    const setLocation = ({ lat, lng }) => {
+        if (openLocation && data.obj && data.errors.length === 0) {
+            try {
+                setText(
+                    `--- #natureshare.org\n${yaml.safeDump(
+                        {
+                            latitude: parseFloat(lat),
+                            longitude: parseFloat(lng),
+                            ...data.obj,
+                        },
+                        {
+                            lineWidth: 1000,
+                            noRefs: true,
+                        },
+                    )}`,
+                );
+            } catch (e) {
+                // console.error(e);
+            }
+        }
+        setOpenLocation(false);
+    };
+
     return (
         <Layout title="Metadata" href="/metadata/">
             <H1>Metadata Creator</H1>
             <Box mt={3}>
                 <Grid container spacing={1}>
                     {['id', 'description', 'tags', 'collections'].map((i) => (
-                        <Grid item>
+                        <Grid item key={i}>
                             <Button
                                 size="small"
                                 color="primary"
@@ -157,6 +149,17 @@ export default function Validator({ schemaYaml }) {
                             </Button>
                         </Grid>
                     ))}
+                    <Grid item>
+                        <Button
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                            onClick={() => setOpenLocation(true)}
+                            disabled={data.errors.length !== 0}
+                        >
+                            Add Location
+                        </Button>
+                    </Grid>
                 </Grid>
             </Box>
             <Box mt={3}>
@@ -253,7 +256,12 @@ export default function Validator({ schemaYaml }) {
                 open={data.errors.length === 0 && Boolean(openPrompt)}
                 setOpen={setOpenPrompt}
                 title={openPrompt}
-                callback={addField}
+                onSubmit={addField}
+            />
+            <LocationFormDialog
+                open={openLocation}
+                setOpen={setOpenLocation}
+                onSubmit={setLocation}
             />
         </Layout>
     );

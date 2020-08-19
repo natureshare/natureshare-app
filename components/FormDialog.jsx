@@ -1,7 +1,7 @@
 /* global process URL */
 /* eslint-disable no-alert */
 import { withStyles } from '@material-ui/core/styles';
-import { useState, useEffect, useContext, useRef, useCallback, useReducer } from 'react';
+import { useState, useEffect, useContext, useReducer } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -14,7 +14,6 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Checkbox from '@material-ui/core/Checkbox';
-import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { createHash } from 'crypto';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -39,7 +38,6 @@ export default function FormDialog({
     const [, setFeedback] = useContext(FeedbackContext);
     const [errors, setErrors] = useState({});
     const [openErrorsDialog, setOpenErrorsDialog] = useState(false);
-    const mapMarker = useRef();
 
     const getFieldValues = (obj) =>
         Object.keys(fields).reduce(
@@ -56,95 +54,8 @@ export default function FormDialog({
         }
     }, [open]);
 
-    const floatRegEx = /^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$/;
-
-    const isFloat = (n) => floatRegEx.test(n);
-
-    const isValidLatLng = (lat, lng) =>
-        isFloat(lat) && isFloat(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
-
-    const updateLatLng = (latLng, preventMarkerUpdate) => {
-        updateData({
-            latitude: latLng.lat.toFixed(3),
-            longitude: latLng.lng.toFixed(3),
-            preventMarkerUpdate,
-        });
-    };
-
     const passwordDigest = (password) =>
         createHash('sha256').update(`${process.env.passwordSalt}${password}`).digest('base64');
-
-    const markerMapContainerRef = useCallback((container) => {
-        if (container !== null && typeof window === 'object' && typeof window.L === 'object') {
-            const osmBaseLayer = window.L.tileLayer(
-                `https://${process.env.osmHost}/{z}/{x}/{y}.png`,
-                {
-                    attribution:
-                        'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-                },
-            );
-
-            const center = [-28.076, 134.003];
-
-            const lMap = window.L.map(container, {
-                center,
-                zoom: 1,
-                scrollWheelZoom: true,
-                layers: [osmBaseLayer],
-            });
-
-            const divIcon = window.L.divIcon({
-                html: '&#9679;',
-                className: 'mapicon',
-                iconSize: [20, 20],
-            });
-
-            const marker = window.L.marker(center, {
-                icon: divIcon,
-                draggable: true,
-                autoPan: true,
-                autoPanPadding: [10, 10],
-            })
-                .addTo(lMap)
-                .on('moveend', (e) => {
-                    updateLatLng(e.target.getLatLng().wrap(), true);
-                });
-
-            mapMarker.current = marker;
-
-            const CustomControl = window.L.Control.extend({
-                onAdd: () => {
-                    const div = window.L.DomUtil.create('button');
-                    div.innerHTML = '&#127968;';
-                    div.style.height = '30px';
-                    div.style.width = '30px';
-                    div.style.backgroundColor = '#FFF';
-                    div.style.fontWeight = 'bold';
-                    div.onclick = () => {
-                        lMap.locate({ setView: false });
-                    };
-                    return div;
-                },
-                onRemove: () => {},
-            });
-
-            new CustomControl({ position: 'topright' }).addTo(lMap);
-
-            lMap.on('locationfound', (e) => updateLatLng(e.latlng));
-        }
-    }, []);
-
-    useEffect(() => {
-        if (data.preventMarkerUpdate) {
-            updateData({ preventMarkerUpdate: false });
-        } else {
-            const lat = parseFloat(data.latitude);
-            const lng = parseFloat(data.longitude);
-            if (mapMarker.current && isValidLatLng(lat, lng)) {
-                mapMarker.current.setLatLng([lat, lng]);
-            }
-        }
-    }, [mapMarker.current, data.latitude, data.longitude]);
 
     const cancel = () => {
         setOpen(false);
@@ -302,15 +213,6 @@ export default function FormDialog({
                                             style={{ width: '100%' }}
                                             fullWidth
                                         />
-                                        {fields[k].markerMap && (
-                                            <Box
-                                                mt={2}
-                                                component={Paper}
-                                                elevation={1}
-                                                style={{ height: '160px' }}
-                                                ref={markerMapContainerRef}
-                                            />
-                                        )}
                                     </>
                                 )}
                                 {fields[k].type === 'checkbox' && (

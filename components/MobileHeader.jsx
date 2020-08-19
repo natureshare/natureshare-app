@@ -29,7 +29,11 @@ export default function MobileHeader() {
                 content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, user-scalable=no, viewport-fit=cover"
             />
 
-            <link rel="shortcut icon" href={href('/assets/icons/transparent/icon128.png')} type="image/png" />
+            <link
+                rel="shortcut icon"
+                href={href('/assets/icons/transparent/icon128.png')}
+                type="image/png"
+            />
 
             <link rel="apple-touch-icon" href={href('/assets/icons/icon32.png')} />
             <link rel="apple-touch-icon" sizes="57x57" href={href('/assets/icons/icon57.png')} />
