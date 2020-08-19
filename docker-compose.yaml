@@ -4,7 +4,7 @@ services:
   node:
     image: node:12
     env_file:
-      - .env
+      - .env.docker
     volumes:
       - .:/var/app:delegated
       - ../natureshare-files:/var/app/public/content:ro

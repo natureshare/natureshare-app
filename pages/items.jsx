@@ -40,7 +40,7 @@ export default function Items() {
 
     const updateUrl = (routerPath) => {
         const { i, p, t } = queryString.parse(routerPath.split('?', 2)[1]);
-        const url = resolveUrl(i || '/index.json', process.env.contentHost);
+        const url = resolveUrl(i || '/index.json', process.env.CONTENT_HOST);
         setFeedUrl(url || null);
         setTagPrefix(p || null);
         setTag(t || null);

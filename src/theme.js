@@ -30,10 +30,10 @@ const theme = createMuiTheme({
     },
     palette: {
         primary: {
-            main: '#558b2f',
+            main: process.env.THEME_COLOR,
         },
         background: {
-            default: '#fff',
+            default: process.env.BACKGROUND_COLOR,
         },
     },
 });

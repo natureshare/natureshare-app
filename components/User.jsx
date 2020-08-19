@@ -7,7 +7,7 @@ export const UserContext = createContext([null, () => null]);
 export const UserContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
-    const src = process.env.apiHost ? new URL('/user', process.env.apiHost).href : null;
+    const src = process.env.API_HOST ? new URL('/user', process.env.API_HOST).href : null;
 
     useEffect(() => {
         if (user === null) {

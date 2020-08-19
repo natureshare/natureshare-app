@@ -6,8 +6,8 @@ import { resolveUrl } from '../utils/fetch';
 export default function Index() {
     return (
         <FeedWithMap
-            h1={process.env.appName}
-            url={resolveUrl('/index.json', process.env.contentHost)}
+            h1={process.env.APP_NAME}
+            url={resolveUrl('/index.json', process.env.CONTENT_HOST)}
             href="items"
         />
     );

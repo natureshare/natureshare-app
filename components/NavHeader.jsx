@@ -3,7 +3,7 @@
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
+import MenuIcon from 'mdi-material-ui/Flower';
 import Box from '@material-ui/core/Box';
 import React, { useState, useContext } from 'react';
 import Drawer from '@material-ui/core/Drawer';
@@ -26,7 +26,7 @@ import LogInFormDialog from './LogInFormDialog';
 import UserFormDialog from './UserFormDialog';
 import { UserContext } from './User';
 
-export default function Header({ title, href }) {
+export default function NavHeader({ title, href }) {
     const [drawerIsOpen, openDrawer] = useState(false);
     const [openLogInForm, setOpenLogInForm] = useState(false);
     const [openUserForm, setOpenUserForm] = useState(false);
@@ -38,9 +38,9 @@ export default function Header({ title, href }) {
         setUser({});
         if (window && typeof window === 'object') {
             window.localStorage.removeItem('userToken');
-            if (process.env.apiHost)
+            if (process.env.API_HOST)
                 window
-                    .fetch(new URL('/auth', process.env.apiHost).href, {
+                    .fetch(new URL('/auth', process.env.API_HOST).href, {
                         credentials: 'include',
                         method: 'DELETE',
                     })
@@ -68,15 +68,11 @@ export default function Header({ title, href }) {
                         >
                             {title && (
                                 <>
-                                    <span
-                                        className="mdi mdi-flower"
-                                        style={{ marginRight: '-1px' }}
-                                    />
-                                    <Hidden smDown>{process.env.appName}</Hidden>
-                                    <Hidden mdUp>{process.env.appShortName}</Hidden>
+                                    <Hidden smDown>{process.env.APP_NAME}</Hidden>
+                                    <Hidden mdUp>{process.env.APP_MONOGRAM}</Hidden>
                                 </>
                             )}
-                            {!title && process.env.appName}
+                            {!title && process.env.APP_NAME}
                         </Link>
                     </Box>
                     {title && (
@@ -101,7 +97,6 @@ export default function Header({ title, href }) {
                     )}
                 </Toolbar>
             </AppBar>
-            <Toolbar variant="dense" />
             <Drawer anchor="left" open={drawerIsOpen} onClose={() => openDrawer(false)}>
                 <div
                     role="presentation"
@@ -117,7 +112,7 @@ export default function Header({ title, href }) {
                             <ListItemText primary="Home" />
                         </ListItem>
                         <Divider />
-                        {process.env.apiHost && (
+                        {process.env.API_HOST && (
                             <>
                                 {user && !user.name && (
                                     <>

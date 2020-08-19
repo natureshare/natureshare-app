@@ -27,7 +27,7 @@ export default function Upload() {
             <H1>Upload</H1>
             <Box mt={3}>
                 <H2>Contribute your Photos and Video from the Cloud</H2>
-                <P>NatureShare is designed as a distrubuted and decentralised sharing hub.</P>
+                <P>NatureShare is designed as a distributed and decentralised sharing hub.</P>
                 <P>
                     This means you can choose where in the cloud your photos are stored and
                     maintained.

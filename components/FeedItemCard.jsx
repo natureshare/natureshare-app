@@ -112,10 +112,9 @@ const ItemCard = ({
     </Card>
 );
 
-const appHost = new URL(process.env.appHost).host;
-
 export default function FeedItemCard({ url, sourceUrl, ...item }) {
-    const itemUrl = new URL(url, process.env.appHost);
+    const appHost = new URL(process.env.APP_HOST).host;
+    const itemUrl = new URL(url, process.env.APP_HOST);
 
     if (itemUrl.host === appHost) {
         const { i, ...query } = queryString.parse(itemUrl.search.split('?', 2)[1]);

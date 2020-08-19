@@ -33,7 +33,7 @@ export default function IdHeader({ indexUrl, tagPrefix, tag }) {
         if (tag && tag.toLowerCase() !== 'unidentified') {
             setSpecies(null);
             const speciesPath = `/${idSubDir(tag)}.yaml`;
-            fetchYaml(speciesPath, process.env.speciesHost).then((obj) =>
+            fetchYaml(speciesPath, process.env.SPECIES_HOST).then((obj) =>
                 obj ? setSpecies(obj) : setSpecies({}),
             );
         } else {
@@ -44,7 +44,7 @@ export default function IdHeader({ indexUrl, tagPrefix, tag }) {
     const githubUrl = useMemo(
         () =>
             tag
-                ? `https://github.com/${process.env.githubSpeciesPath}/tree/master/${idSubDir(
+                ? `https://github.com/${process.env.GH_SPECIES_PATH}/tree/master/${idSubDir(
                       tag,
                   )}.yaml`
                 : '',

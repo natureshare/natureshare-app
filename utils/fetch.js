@@ -10,25 +10,25 @@ const opt = {
 };
 
 const whitelist = [
-    process.env.contentHost,
-    process.env.contentHostDev,
-    process.env.speciesHost,
-    process.env.speciesHostDev,
-    ...(process.env.externalHosts ? process.env.externalHosts.split(',') : []),
+    process.env.CONTENT_HOST,
+    process.env.CONTENT_HOST_DEV,
+    process.env.SPECIES_HOST,
+    process.env.SPECIES_HOST_DEV,
+    ...(process.env.EXTERNAL_HOSTS ? process.env.EXTERNAL_HOSTS.split(',') : []),
 ]
     .filter(Boolean)
     .map((i) => new URL(i).host);
 
 export const resolveUrl = (src, host, fixHost) => {
-    if (fixHost !== false && (process.env.contentHostDev || process.env.speciesHostDev)) {
+    if (fixHost !== false && (process.env.CONTENT_HOST_DEV || process.env.SPECIES_HOST_DEV)) {
         return resolveUrl(
             src
-                .replace(process.env.contentHost, process.env.contentHostDev)
-                .replace(process.env.speciesHost, process.env.speciesHostDev),
+                .replace(process.env.CONTENT_HOST, process.env.CONTENT_HOST_DEV)
+                .replace(process.env.SPECIES_HOST, process.env.SPECIES_HOST_DEV),
             host
                 ? host
-                      .replace(process.env.contentHost, process.env.contentHostDev)
-                      .replace(process.env.speciesHost, process.env.speciesHostDev)
+                      .replace(process.env.CONTENT_HOST, process.env.CONTENT_HOST_DEV)
+                      .replace(process.env.SPECIES_HOST, process.env.SPECIES_HOST_DEV)
                 : undefined,
             false,
         );
@@ -95,7 +95,7 @@ export const fetchYaml = (src, host) =>
 export const shortUrl = (url) =>
     url
         ? url
-              .replace(process.env.contentHostDev, './')
-              .replace(process.env.contentHost, './')
+              .replace(process.env.CONTENT_HOST_DEV, './')
+              .replace(process.env.CONTENT_HOST, './')
               .replace(/\/$/, '')
         : url;

@@ -77,9 +77,9 @@ export default function Item() {
         const { i, s } = queryString.parse(router.asPath.split('?', 2)[1]);
 
         const _itemUrl = i
-            ? resolveUrl(_endsWith(i, '.yaml') ? i : `${i}.yaml`, process.env.contentHost)
+            ? resolveUrl(_endsWith(i, '.yaml') ? i : `${i}.yaml`, process.env.CONTENT_HOST)
             : null;
-        const _sourceUrl = s ? resolveUrl(s, process.env.contentHost) : null;
+        const _sourceUrl = s ? resolveUrl(s, process.env.CONTENT_HOST) : null;
 
         setItemUrl(_itemUrl);
         setSourceUrl(_sourceUrl);
@@ -123,7 +123,7 @@ export default function Item() {
             if (_startsWith(shortUrl(itemUrl), './')) {
                 return new URL(
                     shortUrl(itemUrl),
-                    `https://github.com/${process.env.githubContentPath}/tree/master/`,
+                    `https://github.com/${process.env.GH_CONTENT_PATH}/tree/master/`,
                 ).href;
             }
         }
@@ -448,7 +448,7 @@ export default function Item() {
                             <>
                                 <ListItem>
                                     <ListItemText
-                                        primary="Date-Time From Camera"
+                                        primary="Date-Time from Camera"
                                         secondary={item.photo_datetime_used ? 'Yes' : 'No'}
                                     />
                                 </ListItem>
@@ -482,7 +482,7 @@ export default function Item() {
                                 </ListItem>
                                 <ListItem>
                                     <ListItemText
-                                        primary="Photo Geo-Tag Used"
+                                        primary="Location from Camera (Geotag)"
                                         secondary={item.photo_geotag_used ? 'Yes' : 'No'}
                                     />
                                 </ListItem>

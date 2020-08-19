@@ -1,5 +1,40 @@
 a {
-    text-decoration: none !important;
+  text-decoration: none !important;
+}
+
+@media screen {
+  .backgroundImage {
+    position: fixed;
+    overflow-y: auto;
+    padding-top: 3px;
+    top: 47px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: #fff;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+  }
+
+  .print-only {
+    display: none;
+  }
+}
+
+@media print {
+  body {
+    background: white !important;
+  }
+
+  .hidden-print {
+    display: none;
+  }
+
+  .print-only {
+    display: block;
+  }
 }
 
 .leaflet-popup-content {

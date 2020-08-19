@@ -55,7 +55,7 @@ export default function FormDialog({
     }, [open]);
 
     const passwordDigest = (password) =>
-        createHash('sha256').update(`${process.env.passwordSalt}${password}`).digest('base64');
+        createHash('sha256').update(`${process.env.PASSWORD_SALT}${password}`).digest('base64');
 
     const cancel = () => {
         setOpen(false);
@@ -83,7 +83,7 @@ export default function FormDialog({
             setTimeout(
                 () =>
                     window
-                        .fetch(new URL(url, process.env.apiHost).href, {
+                        .fetch(new URL(url, process.env.API_HOST).href, {
                             method: method || 'POST',
                             mode: 'cors',
                             cache: 'no-cache',

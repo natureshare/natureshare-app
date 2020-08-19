@@ -54,7 +54,7 @@ export default function LocationFormDialog({
             typeof window.L === 'object'
         ) {
             const osmBaseLayer = window.L.tileLayer(
-                `https://${process.env.osmHost}/{z}/{x}/{y}.png`,
+                `//${new URL(process.env.OSM_HOST).host}/{z}/{x}/{y}.png`,
                 {
                     attribution:
                         'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',

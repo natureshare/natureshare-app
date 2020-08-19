@@ -18,8 +18,8 @@ export default function Profile() {
     useEffect(() => {
         const { i } = queryString.parse(router.asPath.split(/\?/)[1]);
         if (i) {
-            setUsername(new URL(i, process.env.contentHost).pathname.split('/', 2)[1]);
-            const url = resolveUrl(i, process.env.contentHost);
+            setUsername(new URL(i, process.env.CONTENT_HOST).pathname.split('/', 2)[1]);
+            const url = resolveUrl(i, process.env.CONTENT_HOST);
             setFeedUrl(shortUrl(resolveUrl(`./_index/items/index.json`, url)));
             fetchYaml(url).then((obj) => obj && setProfile(obj));
         }

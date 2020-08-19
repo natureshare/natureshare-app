@@ -17,7 +17,7 @@ sections:
 
             When you authorise the NatureShare app a new *Apps* folder will be created.
 
-            You must put the files you want NatureShare to access only in that folder. (See below.)
+            You must put the files you want NatureShare to access only in that folder - see below.
 
       - title: Return
         text: You will be redirected back to the NatureShare uploads page.
@@ -40,7 +40,7 @@ sections:
         text: |
           Inside the *NatureShare* folder, please create one or more new folders for your photos.
 
-          I recommend creating one folder per year, but you can use anything name like (eg "frogs"), as long as you keep it short and only used letters and numbers.
+          I recommend creating one folder per year, but you can use any name you like (eg "frogs"), as long as you keep it short and only use letters and numbers.
 
       - title: Upload
         image: ./dropbox/folder_content.png

@@ -47,9 +47,9 @@ export default function ConnectCard({ id, avatar, title, subheader, body }) {
                 }
             }
 
-            if (process.env.apiHost)
+            if (process.env.API_HOST)
                 window
-                    .fetch(new URL(`/user/oauth/${id}`, process.env.apiHost).href, {
+                    .fetch(new URL(`/user/oauth/${id}`, process.env.API_HOST).href, {
                         method: 'DELETE',
                         credentials: 'include',
                         headers,
@@ -97,7 +97,7 @@ export default function ConnectCard({ id, avatar, title, subheader, body }) {
                         disabled={!(user && user.name)}
                         color="primary"
                         startIcon={<ConnectIcon />}
-                        href={new URL(`/connect/${id}`, process.env.apiHost).href}
+                        href={new URL(`/connect/${id}`, process.env.API_HOST).href}
                     >
                         Connect
                     </Button>

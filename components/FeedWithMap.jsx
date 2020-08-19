@@ -216,7 +216,7 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
             href={
                 (feed.author &&
                     feed.author.url &&
-                    feed.author.url.replace(process.env.appHost, '')) ||
+                    feed.author.url.replace(process.env.APP_HOST, '')) ||
                 '/'
             }
         >

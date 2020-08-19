@@ -3,12 +3,11 @@
 .next
 /node_modules
 
-/.env
+/.env.local
+/.env.docker
+
 /build
 /out
 
-/public/docs
 /public/leaflet.js
-aws-s3-sync.sh
-public/content
-public/species
+/public/manifest.json

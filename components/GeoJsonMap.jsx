@@ -1,3 +1,5 @@
+/* global process URL */
+
 import Paper from '@material-ui/core/Paper';
 import { useRef, useEffect, useCallback } from 'react';
 
@@ -14,7 +16,7 @@ export default function GeoJsonMap({ geo }) {
             !geoBaseLayer.current
         ) {
             const osmBaseLayer = window.L.tileLayer(
-                `https://${process.env.osmHost}/{z}/{x}/{y}.png`,
+                `//${new URL(process.env.OSM_HOST).host}/{z}/{x}/{y}.png`,
                 {
                     attribution:
                         'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
@@ -22,7 +24,7 @@ export default function GeoJsonMap({ geo }) {
             );
 
             const thuderforestBaseLayer = window.L.tileLayer(
-                `https://tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=${process.env.tfApiKey}`,
+                `https://tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=${process.env.TF_API_KEY}`,
                 {
                     attribution:
                         '<a href="https://www.thunderforest.com/maps/landscape/">thunderforest.com</a>',

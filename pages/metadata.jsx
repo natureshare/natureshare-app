@@ -39,7 +39,7 @@ const theme = {
     base06: '#f5f5f5',
     base07: '#ffffff',
     base08: '#fb0120',
-    base09: '#fc6d24',
+    base09: '#6dfc24',
     base0A: '#fda331',
     base0B: '#a1c659',
     base0C: '#76c7b7',
