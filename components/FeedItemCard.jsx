@@ -81,7 +81,7 @@ const ItemCard = ({
                         {author.name}
                     </Typography>
                 )}
-                {title && title !== hideTitle && (
+                {title && (!hideTitle || !hideTitle.includes(title)) && (
                     <Typography variant="h2" component="div">
                         {title}
                     </Typography>

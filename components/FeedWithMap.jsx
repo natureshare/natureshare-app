@@ -1,5 +1,6 @@
 /* global URLSearchParams process */
 /* eslint-disable react/no-array-index-key */
+
 import Box from '@material-ui/core/Box';
 import { useState, useEffect, useMemo } from 'react';
 import Button from '@material-ui/core/Button';
@@ -7,7 +8,6 @@ import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Head from 'next/head';
 import _lines from 'underscore.string/lines';
 import _startsWith from 'lodash/startsWith';
-import _mapValues from 'lodash/mapValues';
 import _orderBy from 'lodash/orderBy';
 import _get from 'lodash/get';
 import Pagination from '@material-ui/lab/Pagination';
@@ -21,17 +21,6 @@ import FeedSortControls from './FeedSortControls';
 
 const PER_PAGE = 52;
 
-const getFirst = (ary, prop) => {
-    if (ary && ary.length !== 0) {
-        /* eslint-disable no-restricted-syntax */
-        for (const i of ary) {
-            if (i[prop]) return i[prop];
-        }
-        /* eslint-enable no-restricted-syntax */
-    }
-    return null;
-};
-
 const coord = (ary) =>
     ary.reduce((acc, val) => acc && Boolean(parseFloat(val)), true)
         ? ary.map((v) => Math.round(parseFloat(v) * 1000) / 1000)
@@ -39,34 +28,46 @@ const coord = (ary) =>
 
 const average = (ary) => ary.reduce((a, b) => a + b, 0) / ary.length;
 
-export const averageCoord = (items) => {
-    const coordAry = items.map((i) => i._geo.coordinates).filter(Boolean);
+export const averageCoord = (coordAry) =>
+    coord([average(coordAry.map((i) => i[0])), average(coordAry.map((i) => i[1]))]);
 
-    return coord([average(coordAry.map((i) => i[0])), average(coordAry.map((i) => i[1]))]);
-};
-
-export default function FeedWithMap({ url, tagPrefix, tag, children }) {
+export default function FeedWithMap({ url, filterTags, groupByTag, children }) {
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
     const [feed, setFeed] = useState({});
+    const [feedItems, setFeedItems] = useState([]);
+    const [feedNextUrl, setFeedNextUrl] = useState(null);
 
     const [itemsSort, setItemsSort] = useState(['default', 'desc']);
     const [itemsFilter, setItemsFilter] = useState({});
 
-    const reset = () => {
-        setError(null);
-        setPage(1);
-    };
+    useEffect(() => {
+        if (document) {
+            const container = document.getElementById('mainContainer');
+            const div = document.getElementById('feedItemsGrid');
+            if (container && div)
+                container.scrollTo({
+                    top: div.offsetTop - 70,
+                    left: 0,
+                    behavior: 'auto',
+                });
+        }
+    }, [page]);
 
     useEffect(() => {
-        reset();
+        setError(null);
+        setPage(1);
         setFeed({});
+        setFeedItems([]);
+        setFeedNextUrl(null);
         if (url) {
             fetchJson(url).then((obj) => {
                 if (obj) {
-                    setFeed(obj);
+                    const { items, next_url: nextUrl, ...other } = obj;
+                    setFeed(other);
+                    setFeedItems(items);
+                    setFeedNextUrl(nextUrl);
                 } else {
-                    setFeed({});
                     setError('Nothing to Show');
                 }
             });
@@ -74,85 +75,117 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
     }, [url]);
 
     useEffect(() => {
-        reset();
-    }, [tagPrefix, tag]);
+        setPage(1);
+    }, [filterTags, groupByTag]);
 
     useEffect(() => {
-        if (feed && feed.next_url && feed.items && feed.items.length !== 0) {
-            fetchJson(feed.next_url).then((obj) => {
-                if (obj === false) {
-                    // EOL
-                    setFeed({ ...feed, next_url: null });
-                } else if (obj && obj.items) {
-                    setFeed({
-                        ...feed,
-                        next_url: obj.next_url,
-                        items: feed.items.concat(obj.items),
-                    });
+        if (feedNextUrl && feedItems.length !== 0) {
+            fetchJson(feedNextUrl).then((obj) => {
+                if (obj && obj.items && obj.items.length !== 0) {
+                    const { items, next_url: nextUrl } = obj;
+                    setFeedItems(feedItems.concat(items));
+                    setFeedNextUrl(nextUrl);
+                } else {
+                    setFeedNextUrl(null); // EOL
                 }
             });
         }
-    }, [feed]);
+    }, [feedNextUrl]);
 
     const itemsFiltered = useMemo(() => {
-        if (feed && feed.items && feed.items.length !== 0) {
-            let { items } = feed;
+        if (feedItems.length !== 0) {
+            let items = feedItems;
 
             Object.keys(itemsFilter).forEach((k) => {
                 if (itemsFilter[k]) {
+                    // console.log('Filter: ', itemsFilter[k]);
                     items = items.filter(
                         (i) => (itemsFilter[k] === 'yes') === Boolean(_get(i, k, false)),
                     );
                 }
             });
 
-            const prefix = tagPrefix ? `${tagPrefix}=` : '';
-
-            if (tag === '~') {
-                const tagGroups = items.reduce((acc, item) => {
-                    if (item.tags) {
-                        item.tags.forEach((t) => {
-                            if (t && _startsWith(t, prefix)) {
-                                if (acc[t] === undefined) acc[t] = [];
-                                acc[t].push(item);
-                            }
-                        });
-                    }
-                    return acc;
-                }, {});
-
-                return Object.values(
-                    _mapValues(tagGroups, (group, t) => ({
-                        id: t.replace(prefix, ''),
-                        url: `/items?${new URLSearchParams({
-                            i: shortUrl(url),
-                            p: tagPrefix,
-                            t: t.replace(prefix, ''),
-                        })}`,
-                        title: t.replace(prefix, ''),
-                        content_text: `${group.length} items`,
-                        image: getFirst(group, 'image'),
-                        date_published: group[0].date_published,
-                        date_modified: group[0].date_published,
-                        _geo: {
-                            coordinates: averageCoord(group),
-                        },
-                        _meta: {
-                            date: group[0].date_published.split('T', 1)[0],
-                            itemCount: group.length,
-                        },
-                    })),
+            if (filterTags && filterTags.length !== 0) {
+                // console.log('Tags:', filterTags);
+                items = items.filter(
+                    ({ tags }) =>
+                        tags &&
+                        tags.length >= filterTags.length &&
+                        filterTags.reduce((acc, ft) => acc && tags.includes(ft), true),
                 );
             }
 
-            if (tag) {
-                return items.filter(({ tags }) => tags && tags.includes(prefix + tag));
+            if (groupByTag) {
+                // console.log('Group:', groupByTag);
+                items = Object.values(
+                    items.reduce((acc, item) => {
+                        if (item.tags) {
+                            item.tags.forEach((t) => {
+                                if (
+                                    t &&
+                                    _startsWith(t, groupByTag) &&
+                                    (!filterTags || !filterTags.includes(t))
+                                ) {
+                                    if (acc[t] === undefined) {
+                                        acc[t] = {
+                                            id: t,
+                                            url: `/items?${new URLSearchParams({
+                                                i: shortUrl(url),
+                                                t: [...(filterTags || []), t].join('|'),
+                                            })}`,
+                                            title: t.replace(groupByTag, ''),
+                                            content_text: '-',
+                                            image: item.image,
+                                            date_published: item.date_published,
+                                            date_modified: item.date_published,
+                                            _geo: {
+                                                allCoordinates:
+                                                    item._geo && item._geo.coordinates
+                                                        ? [item._geo.coordinates]
+                                                        : [],
+                                            },
+                                            _meta: {
+                                                date: item.date_published.split('T', 1)[0],
+                                                itemCount: 1,
+                                            },
+                                        };
+                                    } else {
+                                        /* eslint-disable prefer-destructuring */
+                                        acc[t].image = acc[t].image || item.image;
+                                        acc[t].date_published = [
+                                            acc[t].date_published,
+                                            item.date_published,
+                                        ].sort()[1];
+                                        acc[t].date_modified = [
+                                            acc[t].date_modified,
+                                            item.date_modified,
+                                        ].sort()[1];
+                                        if (item._geo && item._geo.coordinates)
+                                            acc[t]._geo.allCoordinates.push(item._geo.coordinates);
+                                        acc[t]._meta.date = acc[t].date_published.split('T', 1)[0];
+                                        acc[t]._meta.itemCount += 1;
+                                        /* eslint-enable prefer-destructuring */
+                                    }
+                                }
+                            });
+                        }
+                        return acc;
+                    }, {}),
+                ).map((item) => {
+                    /* eslint-disable no-param-reassign */
+                    item._geo =
+                        item._geo.allCoordinates.length === 0
+                            ? null
+                            : { coordinates: averageCoord(item._geo.allCoordinates) };
+                    /* eslint-enable no-param-reassign */
+                    return item;
+                });
             }
 
             return items;
         }
         return [];
-    }, [feed, tag, tagPrefix, itemsFilter]);
+    }, [feedItems, filterTags, itemsFilter]);
 
     const itemsSorted = useMemo(
         () =>
@@ -191,24 +224,6 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
         }),
         [itemsFiltered],
     );
-
-    const scrollToTop = () => {
-        if (window && document) {
-            const div = document.getElementById('feedItemsGrid');
-            // if (div) div.scrollIntoView({behavior: "smooth", block: "start", inline: "start"});
-            if (div)
-                window.scrollTo({
-                    top: div.offsetTop - 70,
-                    left: 0,
-                    behavior: 'auto',
-                });
-        }
-    };
-
-    const setPageAndScrollToTop = (i) => {
-        scrollToTop();
-        setPage(i);
-    };
 
     return (
         <Layout
@@ -261,6 +276,7 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
                 <FeedSortControls
                     {...{
                         length: itemsFiltered.length,
+                        page,
                         itemsSort,
                         setItemsSort,
                         itemsFilter,
@@ -270,19 +286,25 @@ export default function FeedWithMap({ url, tagPrefix, tag, children }) {
             </Box>
             <Box pt={1} id="feedItemsGrid">
                 {feed.title && itemsPage.length === 0 && <P>No items.</P>}
-                <FeedItemsGrid items={itemsPage} hideTitle={tag} sourceUrl={shortUrl(url)} />
+                <FeedItemsGrid
+                    items={itemsPage}
+                    hideTitle={
+                        !groupByTag && filterTags && filterTags.map((i) => i.split('~', 2)[1])
+                    }
+                    sourceUrl={shortUrl(url)}
+                />
             </Box>
             <Box mt={3}>
                 <Pagination
                     count={lastPage}
                     page={page}
-                    onChange={(e, i) => setPageAndScrollToTop(i)}
+                    onChange={(e, i) => setPage(i)}
                     variant="outlined"
                     shape="rounded"
                 />
             </Box>
             <Box mt={5} style={{ textAlign: 'center' }}>
-                {url && !tagPrefix && !tag && (
+                {url && !filterTags && !groupByTag && (
                     <ButtonGroup size="small">
                         <Button
                             startIcon={<FileIcon type="json" />}

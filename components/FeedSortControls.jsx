@@ -18,6 +18,7 @@ const filterNext = {
 
 export default function FeedSortControls({
     length,
+    page,
     itemsSort,
     setItemsSort,
     itemsFilter,
@@ -114,6 +115,7 @@ export default function FeedSortControls({
             ))}
             <Grid item style={{ marginLeft: '10px' }}>
                 {length} items
+                {page && page !== 1 && ` (page ${page})`}
             </Grid>
         </Grid>
     );

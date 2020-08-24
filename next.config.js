@@ -1,4 +1,5 @@
 /* global require module process */
+/* eslint-disable no-console */
 
 const fs = require('fs');
 const _pick = require('lodash/pick');
