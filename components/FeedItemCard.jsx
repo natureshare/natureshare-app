@@ -112,7 +112,7 @@ const ItemCard = ({
     </Card>
 );
 
-export default function FeedItemCard({ url, sourceUrl, ...item }) {
+export default function FeedItemCard({ url, ...item }) {
     const appHost = new URL(process.env.APP_HOST).host;
     const itemUrl = new URL(url, process.env.APP_HOST);
 
@@ -124,7 +124,6 @@ export default function FeedItemCard({ url, sourceUrl, ...item }) {
                 href={itemUrl.pathname}
                 as={`${itemUrl.pathname}?${new URLSearchParams({
                     i: shortUrl(i),
-                    s: sourceUrl,
                     ...query,
                 })}`}
             >

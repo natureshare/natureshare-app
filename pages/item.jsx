@@ -53,7 +53,6 @@ export default function Item() {
     const router = useRouter();
 
     const [itemUrl, setItemUrl] = useState();
-    const [sourceUrl, setSourceUrl] = useState();
     const [userItemsUrl, setUserItemsUrl] = useState();
 
     const [userName, setUserName] = useState(null);
@@ -65,24 +64,22 @@ export default function Item() {
     const [showMedia, setShowMedia] = useState(false);
     const [showPhoto, setShowPhoto] = useState(false);
 
-    const itemsParams = (p, t) => {
+    const linkParams = (t) => {
         if (itemUrl) {
-            const i = shortUrl(sourceUrl || userItemsUrl);
-            return new URLSearchParams({ i, p, t });
+            const i = shortUrl(userItemsUrl);
+            return new URLSearchParams({ i, t });
         }
         return {};
     };
 
     useEffect(() => {
-        const { i, s } = queryString.parse(router.asPath.split('?', 2)[1]);
+        const { i } = queryString.parse(router.asPath.split('?', 2)[1]);
 
         const _itemUrl = i
             ? resolveUrl(_endsWith(i, '.yaml') ? i : `${i}.yaml`, process.env.CONTENT_HOST)
             : null;
-        const _sourceUrl = s ? resolveUrl(s, process.env.CONTENT_HOST) : null;
 
         setItemUrl(_itemUrl);
-        setSourceUrl(_sourceUrl);
 
         if (_itemUrl) {
             fetchYaml(_itemUrl).then((obj) => {
@@ -268,7 +265,7 @@ export default function Item() {
                                     divider={i + 1 !== item.id.length}
                                     component={Link}
                                     href="/items"
-                                    as={`/items?${itemsParams('id', name)}`}
+                                    as={`/items?${linkParams(`id~${name}`)}`}
                                 >
                                     <ListItemText
                                         primary={name}
@@ -301,7 +298,7 @@ export default function Item() {
                                     onClick={() => {}}
                                     component={Link}
                                     href="/items"
-                                    as={`/items?${itemsParams('tag', tag)}`}
+                                    as={`/items?${linkParams('tag~', tag)}`}
                                     style={{ wordBreak: 'break-all' }}
                                 />
                             </Grid>

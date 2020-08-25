@@ -2,7 +2,7 @@
 /* eslint-disable react/no-array-index-key */
 
 import Box from '@material-ui/core/Box';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Head from 'next/head';
@@ -10,7 +10,12 @@ import _lines from 'underscore.string/lines';
 import _startsWith from 'lodash/startsWith';
 import _orderBy from 'lodash/orderBy';
 import _get from 'lodash/get';
+import _pickBy from 'lodash/pickBy';
 import Pagination from '@material-ui/lab/Pagination';
+import { useRouter } from 'next/router';
+import queryString from 'query-string';
+import _toPairs from 'lodash/toPairs';
+import _fromPairs from 'lodash/fromPairs';
 import { resolveUrl, fetchJson, shortUrl } from '../utils/fetch';
 import FeedItemsGrid from './FeedItemsGrid';
 import GeoJsonMap from './GeoJsonMap';
@@ -31,15 +36,71 @@ const average = (ary) => ary.reduce((a, b) => a + b, 0) / ary.length;
 export const averageCoord = (coordAry) =>
     coord([average(coordAry.map((i) => i[0])), average(coordAry.map((i) => i[1]))]);
 
-export default function FeedWithMap({ url, filterTags, groupByTag, children }) {
-    const [error, setError] = useState(null);
+export default function FeedWithMap({ defaultUrl, children }) {
+    const [feedUrl, setFeedUrl] = useState();
+    const [filterTags, setFilterTags] = useState();
+    const [groupByTag, setGroupByTag] = useState();
+    const [itemsSort, setItemsSort] = useState('default');
+    const [itemsSortOrder, setItemsSortOrder] = useState('desc');
+    const [itemsFilter, setItemsFilter] = useState({});
     const [page, setPage] = useState(1);
+    const [error, setError] = useState(null);
     const [feed, setFeed] = useState({});
     const [feedItems, setFeedItems] = useState([]);
     const [feedNextUrl, setFeedNextUrl] = useState(null);
 
-    const [itemsSort, setItemsSort] = useState(['default', 'desc']);
-    const [itemsFilter, setItemsFilter] = useState({});
+    const router = useRouter();
+
+    const urlParams = useCallback(
+        ({ i, g, t, s, o, f }) => {
+            const params = _pickBy(
+                {
+                    i: shortUrl(i !== undefined ? i : feedUrl),
+                    g: g !== undefined ? g : groupByTag,
+                    t: (t !== undefined ? t : filterTags).join('|'),
+                    s: s !== undefined ? s : itemsSort,
+                    o: o !== undefined ? o : itemsSortOrder,
+                    f: _toPairs(f !== undefined ? f : itemsFilter)
+                        .map((n) => n.join('~'))
+                        .join('|'),
+                },
+                Boolean,
+            );
+            return new URLSearchParams(params).toString();
+        },
+        [feedUrl, groupByTag, filterTags, itemsSort, itemsSortOrder, itemsFilter],
+    );
+
+    const updateParams = (routerPath) => {
+        const { i, g, t, s, o, f } = queryString.parse(routerPath.split('?', 2)[1]);
+        const url = resolveUrl(i || '/index.json', process.env.CONTENT_HOST);
+        setFeedUrl(url || defaultUrl || null);
+        setGroupByTag(g || null);
+        setFilterTags(t ? t.split('|') : []);
+        setItemsSort(s || 'default');
+        setItemsSortOrder(o || 'desc');
+        setItemsFilter(f ? _fromPairs(f.split('|').map((n) => n.split('~', 2))) : {});
+    };
+
+    useEffect(() => {
+        updateParams(router.asPath);
+        const handleRouteChange = (url) => {
+            if (document) {
+                const container = document.getElementById('mainContainer');
+                if (container)
+                    container.scrollTo({
+                        top: 0,
+                        left: 0,
+                        behavior: 'auto',
+                    });
+            }
+            updateParams(url);
+        };
+        router.events.on('routeChangeComplete', handleRouteChange);
+        return () => {
+            router.events.off('routeChangeComplete', handleRouteChange);
+        };
+    }, []);
 
     useEffect(() => {
         if (document) {
@@ -60,8 +121,8 @@ export default function FeedWithMap({ url, filterTags, groupByTag, children }) {
         setFeed({});
         setFeedItems([]);
         setFeedNextUrl(null);
-        if (url) {
-            fetchJson(url).then((obj) => {
+        if (feedUrl) {
+            fetchJson(feedUrl).then((obj) => {
                 if (obj) {
                     const { items, next_url: nextUrl, ...other } = obj;
                     setFeed(other);
@@ -72,7 +133,7 @@ export default function FeedWithMap({ url, filterTags, groupByTag, children }) {
                 }
             });
         }
-    }, [url]);
+    }, [feedUrl]);
 
     useEffect(() => {
         setPage(1);
@@ -129,9 +190,9 @@ export default function FeedWithMap({ url, filterTags, groupByTag, children }) {
                                     if (acc[t] === undefined) {
                                         acc[t] = {
                                             id: t,
-                                            url: `/items?${new URLSearchParams({
-                                                i: shortUrl(url),
-                                                t: [...(filterTags || []), t].join('|'),
+                                            url: `/items?${urlParams({
+                                                t: [...filterTags, t],
+                                                g: '',
                                             })}`,
                                             title: t.replace(groupByTag, ''),
                                             content_text: '-',
@@ -189,10 +250,10 @@ export default function FeedWithMap({ url, filterTags, groupByTag, children }) {
 
     const itemsSorted = useMemo(
         () =>
-            itemsSort[0] === 'default'
+            itemsSort === 'default'
                 ? itemsFiltered
-                : _orderBy(itemsFiltered, [(i) => _get(i, itemsSort[0], '')], [itemsSort[1]]),
-        [itemsFiltered, itemsSort],
+                : _orderBy(itemsFiltered, [(i) => _get(i, itemsSort, '')], [itemsSortOrder]),
+        [itemsFiltered, itemsSort, itemsSortOrder],
     );
 
     const itemsPage = useMemo(() => itemsSorted.slice((page - 1) * PER_PAGE, page * PER_PAGE), [
@@ -235,26 +296,26 @@ export default function FeedWithMap({ url, filterTags, groupByTag, children }) {
                 '/'
             }
         >
-            {url && (
+            {feedUrl && (
                 <Head>
-                    <link rel="alternate" type="application/json" title="JSON" href={url} />
+                    <link rel="alternate" type="application/json" title="JSON" href={feedUrl} />
                     <link
                         rel="alternate"
                         type="application/geo+json"
                         title="GeoJSON"
-                        href={resolveUrl(`./geo.json`, url)}
+                        href={resolveUrl(`./geo.json`, feedUrl)}
                     />
                     <link
                         rel="alternate"
                         type="application/rss+xml"
                         title="RSS"
-                        href={resolveUrl(`./index.rss.xml`, url)}
+                        href={resolveUrl(`./index.rss.xml`, feedUrl)}
                     />
                     <link
                         rel="alternate"
                         type="application/atom+xml"
                         title="Atom"
-                        href={resolveUrl(`./index.atom.xml`, url)}
+                        href={resolveUrl(`./index.atom.xml`, feedUrl)}
                     />
                 </Head>
             )}
@@ -268,7 +329,8 @@ export default function FeedWithMap({ url, filterTags, groupByTag, children }) {
                         ))}
                 </>
             )}
-            {children && children(itemsFiltered)}
+            {children &&
+                children({ feedUrl, groupByTag, filterTags, urlParams, items: itemsFiltered })}
             <Box mt={3}>
                 <GeoJsonMap geo={geo} />
             </Box>
@@ -278,9 +340,8 @@ export default function FeedWithMap({ url, filterTags, groupByTag, children }) {
                         length: itemsFiltered.length,
                         page,
                         itemsSort,
-                        setItemsSort,
+                        itemsSortOrder,
                         itemsFilter,
-                        setItemsFilter,
                     }}
                 />
             </Box>
@@ -291,7 +352,6 @@ export default function FeedWithMap({ url, filterTags, groupByTag, children }) {
                     hideTitle={
                         !groupByTag && filterTags && filterTags.map((i) => i.split('~', 2)[1])
                     }
-                    sourceUrl={shortUrl(url)}
                 />
             </Box>
             <Box mt={3}>
@@ -304,32 +364,32 @@ export default function FeedWithMap({ url, filterTags, groupByTag, children }) {
                 />
             </Box>
             <Box mt={5} style={{ textAlign: 'center' }}>
-                {url && !filterTags && !groupByTag && (
+                {feedUrl && !filterTags && !groupByTag && (
                     <ButtonGroup size="small">
                         <Button
                             startIcon={<FileIcon type="json" />}
-                            href={resolveUrl(`./index.json`, url)}
+                            href={resolveUrl(`./index.json`, feedUrl)}
                             target="_blank"
                         >
                             JSON
                         </Button>
                         <Button
                             startIcon={<FileIcon type="json" />}
-                            href={resolveUrl(`./index.geo.json`, url)}
+                            href={resolveUrl(`./index.geo.json`, feedUrl)}
                             target="_blank"
                         >
                             GeoJSON
                         </Button>
                         <Button
                             startIcon={<FileIcon type="xml" />}
-                            href={resolveUrl(`./index.rss.xml`, url)}
+                            href={resolveUrl(`./index.rss.xml`, feedUrl)}
                             target="_blank"
                         >
                             RSS
                         </Button>
                         <Button
                             startIcon={<FileIcon type="xml" />}
-                            href={resolveUrl(`./index.atom.xml`, url)}
+                            href={resolveUrl(`./index.atom.xml`, feedUrl)}
                             target="_blank"
                         >
                             Atom

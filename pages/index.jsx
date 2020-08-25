@@ -4,11 +4,5 @@ import FeedWithMap from '../components/FeedWithMap';
 import { resolveUrl } from '../utils/fetch';
 
 export default function Index() {
-    return (
-        <FeedWithMap
-            h1={process.env.APP_NAME}
-            url={resolveUrl('/index.json', process.env.CONTENT_HOST)}
-            href="items"
-        />
-    );
+    return <FeedWithMap defualtUrl={resolveUrl('/index.json', process.env.CONTENT_HOST)} />;
 }
