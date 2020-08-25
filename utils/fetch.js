@@ -93,9 +93,4 @@ export const fetchYaml = (src, host) =>
     );
 
 export const shortUrl = (url) =>
-    url
-        ? url
-              .replace(process.env.CONTENT_HOST_DEV, './')
-              .replace(process.env.CONTENT_HOST, './')
-              .replace(/\/$/, '')
-        : url;
+    url ? url.replace(process.env.CONTENT_HOST, './').replace(/\/$/, '') : url;
