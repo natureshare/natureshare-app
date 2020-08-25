@@ -77,7 +77,7 @@ export default function Items() {
                             >
                                 {!groupByTag &&
                                     (!filterTags || filterTags.length === 0) &&
-                                    _endsWith(feedUrl, '/_index/items/index.json') && (
+                                    _endsWith(feedUrl, '/items/index.json') && (
                                         <>
                                             <HeaderButton
                                                 text="profile"
