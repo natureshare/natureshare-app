@@ -2,7 +2,7 @@
 /* eslint-disable react/no-array-index-key */
 
 import Box from '@material-ui/core/Box';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useReducer } from 'react';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Head from 'next/head';
@@ -11,6 +11,7 @@ import _startsWith from 'lodash/startsWith';
 import _orderBy from 'lodash/orderBy';
 import _get from 'lodash/get';
 import _pickBy from 'lodash/pickBy';
+import _isEqual from 'lodash/isEqual';
 import Pagination from '@material-ui/lab/Pagination';
 import { useRouter } from 'next/router';
 import queryString from 'query-string';
@@ -36,13 +37,19 @@ const average = (ary) => ary.reduce((a, b) => a + b, 0) / ary.length;
 export const averageCoord = (coordAry) =>
     coord([average(coordAry.map((i) => i[0])), average(coordAry.map((i) => i[1]))]);
 
+function feedParamsReducer(prev, next) {
+    return _pickBy(
+        {
+            ...prev,
+            ..._pickBy(next, (v, k) => !_isEqual(v, prev[k])),
+        },
+        Boolean,
+    );
+}
+
 export default function FeedWithMap({ defaultUrl, children }) {
     const [feedUrl, setFeedUrl] = useState();
-    const [filterTags, setFilterTags] = useState();
-    const [groupByTag, setGroupByTag] = useState();
-    const [itemsSort, setItemsSort] = useState('default');
-    const [itemsSortOrder, setItemsSortOrder] = useState('desc');
-    const [itemsFilter, setItemsFilter] = useState({});
+    const [feedParams, setFeedParams] = useReducer(feedParamsReducer, {});
     const [page, setPage] = useState(1);
     const [error, setError] = useState(null);
     const [feed, setFeed] = useState({});
@@ -51,16 +58,18 @@ export default function FeedWithMap({ defaultUrl, children }) {
 
     const router = useRouter();
 
-    const urlParams = useCallback(
+    const getParams = useCallback(
         ({ i, g, t, s, o, f }) => {
             const params = _pickBy(
                 {
                     i: shortUrl(i !== undefined ? i : feedUrl),
-                    g: g !== undefined ? g : groupByTag,
-                    t: (t !== undefined ? t : filterTags).join('|'),
-                    s: s !== undefined ? s : itemsSort,
-                    o: o !== undefined ? o : itemsSortOrder,
-                    f: _toPairs(f !== undefined ? f : itemsFilter)
+                    g: g !== undefined ? g : feedParams.groupByTag,
+                    t: (t !== undefined ? t : feedParams.filterTags || []).join('|'),
+                    s: s !== undefined ? s : feedParams.itemsSort,
+                    o: o !== undefined ? o : feedParams.itemsSortOrder,
+                    f: _toPairs(
+                        _pickBy(f !== undefined ? f : feedParams.itemsFilter || {}, Boolean),
+                    )
                         .map((n) => n.join('~'))
                         .join('|'),
                 },
@@ -68,23 +77,35 @@ export default function FeedWithMap({ defaultUrl, children }) {
             );
             return new URLSearchParams(params).toString();
         },
-        [feedUrl, groupByTag, filterTags, itemsSort, itemsSortOrder, itemsFilter],
+        [feedUrl, feedParams],
     );
 
-    const updateParams = (routerPath) => {
+    const setParams = (routerPath) => {
         const { i, g, t, s, o, f } = queryString.parse(routerPath.split('?', 2)[1]);
-        const url = resolveUrl(i || '/index.json', process.env.CONTENT_HOST);
-        setFeedUrl(url || defaultUrl || null);
-        setGroupByTag(g || null);
-        setFilterTags(t ? t.split('|') : []);
-        setItemsSort(s || 'default');
-        setItemsSortOrder(o || 'desc');
-        setItemsFilter(f ? _fromPairs(f.split('|').map((n) => n.split('~', 2))) : {});
+        const url = resolveUrl(i || defaultUrl || '/index.json', process.env.CONTENT_HOST);
+        setFeedUrl(url);
+        setFeedParams({
+            groupByTag: g,
+            filterTags: t ? t.split('|') : undefined,
+            itemsSort: s,
+            itemsSortOrder: o,
+            itemsFilter: f ? _fromPairs(f.split('|').map((n) => n.split('~', 2))) : undefined,
+        });
     };
 
     useEffect(() => {
-        updateParams(router.asPath);
+        setParams(router.asPath);
         const handleRouteChange = (url) => {
+            setParams(url);
+        };
+        router.events.on('routeChangeComplete', handleRouteChange);
+        return () => {
+            router.events.off('routeChangeComplete', handleRouteChange);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (feedUrl) {
             if (document) {
                 const container = document.getElementById('mainContainer');
                 if (container)
@@ -94,26 +115,8 @@ export default function FeedWithMap({ defaultUrl, children }) {
                         behavior: 'auto',
                     });
             }
-            updateParams(url);
-        };
-        router.events.on('routeChangeComplete', handleRouteChange);
-        return () => {
-            router.events.off('routeChangeComplete', handleRouteChange);
-        };
-    }, []);
-
-    useEffect(() => {
-        if (document) {
-            const container = document.getElementById('mainContainer');
-            const div = document.getElementById('feedItemsGrid');
-            if (container && div)
-                container.scrollTo({
-                    top: div.offsetTop - 70,
-                    left: 0,
-                    behavior: 'auto',
-                });
         }
-    }, [page]);
+    }, [feedUrl, feedParams, page]);
 
     useEffect(() => {
         setError(null);
@@ -137,7 +140,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
 
     useEffect(() => {
         setPage(1);
-    }, [filterTags, groupByTag]);
+    }, [feedParams]);
 
     useEffect(() => {
         if (feedNextUrl && feedItems.length !== 0) {
@@ -157,14 +160,18 @@ export default function FeedWithMap({ defaultUrl, children }) {
         if (feedItems.length !== 0) {
             let items = feedItems;
 
-            Object.keys(itemsFilter).forEach((k) => {
-                if (itemsFilter[k]) {
-                    // console.log('Filter: ', itemsFilter[k]);
-                    items = items.filter(
-                        (i) => (itemsFilter[k] === 'yes') === Boolean(_get(i, k, false)),
-                    );
-                }
-            });
+            const { itemsFilter, filterTags, groupByTag } = feedParams;
+
+            if (itemsFilter) {
+                Object.keys(itemsFilter).forEach((k) => {
+                    if (itemsFilter[k]) {
+                        // console.log('Filter: ', itemsFilter[k]);
+                        items = items.filter(
+                            (i) => (itemsFilter[k] === 'yes') === Boolean(_get(i, k, false)),
+                        );
+                    }
+                });
+            }
 
             if (filterTags && filterTags.length !== 0) {
                 // console.log('Tags:', filterTags);
@@ -190,8 +197,8 @@ export default function FeedWithMap({ defaultUrl, children }) {
                                     if (acc[t] === undefined) {
                                         acc[t] = {
                                             id: t,
-                                            url: `/items?${urlParams({
-                                                t: [...filterTags, t],
+                                            url: `/items?${getParams({
+                                                t: [...(filterTags || []), t],
                                                 g: '',
                                             })}`,
                                             title: t.replace(groupByTag, ''),
@@ -246,15 +253,14 @@ export default function FeedWithMap({ defaultUrl, children }) {
             return items;
         }
         return [];
-    }, [feedItems, filterTags, itemsFilter]);
+    }, [feedItems, feedParams.itemsFilter, feedParams.filterTags, feedParams.groupByTag]);
 
-    const itemsSorted = useMemo(
-        () =>
-            itemsSort === 'default'
-                ? itemsFiltered
-                : _orderBy(itemsFiltered, [(i) => _get(i, itemsSort, '')], [itemsSortOrder]),
-        [itemsFiltered, itemsSort, itemsSortOrder],
-    );
+    const itemsSorted = useMemo(() => {
+        const { itemsSort, itemsSortOrder } = feedParams;
+        return !itemsSort
+            ? itemsFiltered
+            : _orderBy(itemsFiltered, [(i) => _get(i, itemsSort, '')], [itemsSortOrder || 'desc']);
+    }, [itemsFiltered, feedParams.itemsSort, feedParams.itemsSortOrder]);
 
     const itemsPage = useMemo(() => itemsSorted.slice((page - 1) * PER_PAGE, page * PER_PAGE), [
         itemsSorted,
@@ -330,7 +336,13 @@ export default function FeedWithMap({ defaultUrl, children }) {
                 </>
             )}
             {children &&
-                children({ feedUrl, groupByTag, filterTags, urlParams, items: itemsFiltered })}
+                children({
+                    feedUrl,
+                    groupByTag: feedParams.groupByTag,
+                    filterTags: feedParams.filterTags,
+                    getParams,
+                    items: itemsFiltered,
+                })}
             <Box mt={3}>
                 <GeoJsonMap geo={geo} />
             </Box>
@@ -339,9 +351,10 @@ export default function FeedWithMap({ defaultUrl, children }) {
                     {...{
                         length: itemsFiltered.length,
                         page,
-                        itemsSort,
-                        itemsSortOrder,
-                        itemsFilter,
+                        itemsSort: feedParams.itemsSort,
+                        itemsSortOrder: feedParams.itemsSortOrder,
+                        itemsFilter: feedParams.itemsFilter,
+                        getParams,
                     }}
                 />
             </Box>
@@ -350,7 +363,9 @@ export default function FeedWithMap({ defaultUrl, children }) {
                 <FeedItemsGrid
                     items={itemsPage}
                     hideTitle={
-                        !groupByTag && filterTags && filterTags.map((i) => i.split('~', 2)[1])
+                        !feedParams.groupByTag &&
+                        feedParams.filterTags &&
+                        feedParams.filterTags.map((i) => i.split('~', 2)[1])
                     }
                 />
             </Box>
@@ -364,7 +379,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
                 />
             </Box>
             <Box mt={5} style={{ textAlign: 'center' }}>
-                {feedUrl && !filterTags && !groupByTag && (
+                {feedUrl && !feedParams.filterTags && !feedParams.groupByTag && (
                     <ButtonGroup size="small">
                         <Button
                             startIcon={<FileIcon type="json" />}

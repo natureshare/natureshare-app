@@ -33,7 +33,7 @@ const HeaderButton = ({ text, href, as }) => (
 export default function Items() {
     return (
         <FeedWithMap>
-            {({ feedUrl, urlParams, groupByTag, filterTags, items }) => (
+            {({ feedUrl, getParams, groupByTag, filterTags, items }) => (
                 <>
                     <Box mt={1}>
                         <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
@@ -41,7 +41,7 @@ export default function Items() {
                                 <Typography variant="h4">
                                     <Link
                                         href="/items"
-                                        as={`/items?${urlParams({ g: '', t: [] })}`}
+                                        as={`/items?${getParams({ g: '', t: [] })}`}
                                     >
                                         Items
                                     </Link>
@@ -52,7 +52,7 @@ export default function Items() {
                                     <Typography key={t} variant="h4">
                                         <Link
                                             href="/items"
-                                            as={`/items?${urlParams({
+                                            as={`/items?${getParams({
                                                 g: '',
                                                 t: filterTags.slice(0, i + 1),
                                             })}`}
@@ -91,7 +91,7 @@ export default function Items() {
                                             <HeaderButton
                                                 text="collections"
                                                 href="/items"
-                                                as={`/items?${urlParams({
+                                                as={`/items?${getParams({
                                                     i: shortUrl(
                                                         new URL(
                                                             '../collections/index.json',
@@ -109,7 +109,7 @@ export default function Items() {
                                     <HeaderButton
                                         text="ids"
                                         href="/items"
-                                        as={`/items?${urlParams({ g: 'id~' })}`}
+                                        as={`/items?${getParams({ g: 'id~' })}`}
                                     />
                                 )}
                                 {_find(
@@ -119,7 +119,7 @@ export default function Items() {
                                     <HeaderButton
                                         text="tags"
                                         href="/items"
-                                        as={`/items?${urlParams({ g: 'tag~' })}`}
+                                        as={`/items?${getParams({ g: 'tag~' })}`}
                                     />
                                 )}
                             </Grid>

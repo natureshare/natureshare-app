@@ -1,8 +1,5 @@
-/* global URLSearchParams */
-
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
-import _toPairs from 'lodash/toPairs';
 import _pickBy from 'lodash/pickBy';
 import IconButton from '@material-ui/core/IconButton';
 import SortAscendingIcon from 'mdi-material-ui/SortAlphabeticalAscending';
@@ -14,12 +11,19 @@ import Grid from '@material-ui/core/Grid';
 import { useRouter } from 'next/router';
 
 const filterNext = {
-    '': 'yes',
+    undefined: 'yes',
     yes: 'no',
-    no: '',
+    no: undefined,
 };
 
-export default function FeedSortControls({ length, page, itemsSort, itemsSortOrder, itemsFilter }) {
+export default function FeedSortControls({
+    length,
+    page,
+    itemsSort,
+    itemsSortOrder,
+    itemsFilter,
+    getParams,
+}) {
     const router = useRouter();
 
     const sortOptions = {
@@ -48,11 +52,8 @@ export default function FeedSortControls({ length, page, itemsSort, itemsSortOrd
         Location: <MapMarkerIcon />,
     };
 
-    const setUrlSearchParams = (name, value) => {
-        const params = new URLSearchParams(router.asPath.split('?', 2)[1]);
-        if (value) params.set(name, value);
-        else params.delete(name);
-        router.push(router.pathname, `${router.pathname}?${params.toString()}`, { shallow: true });
+    const routerReplace = (opt) => {
+        router.replace(router.pathname, `${router.pathname}?${getParams(opt)}`, { shallow: true });
         return true;
     };
 
@@ -60,21 +61,23 @@ export default function FeedSortControls({ length, page, itemsSort, itemsSortOrd
         <Grid container direction="row" justify="flex-start" alignItems="center">
             <Grid item>
                 <IconButton
-                    disabled={itemsSort === 'default'}
+                    disabled={!itemsSort}
                     color="primary"
-                    onClick={() =>
-                        setUrlSearchParams('o', itemsSortOrder === 'asc' ? 'desc' : 'asc')
-                    }
+                    onClick={() => routerReplace({ o: itemsSortOrder === 'asc' ? '' : 'asc' })}
                 >
                     {itemsSortOrder === 'asc' && <SortAscendingIcon />}
-                    {itemsSortOrder === 'desc' && <SortDescendingIcon />}
+                    {itemsSortOrder !== 'asc' && <SortDescendingIcon />}
                 </IconButton>
             </Grid>
             <Grid item style={{ paddingRight: '10px' }}>
                 <Select
-                    value={itemsSort}
-                    onChange={(event) => setUrlSearchParams('s', event.target.value)}
-                    label="Sort By"
+                    value={itemsSort || 'default'}
+                    onChange={(event) =>
+                        routerReplace({
+                            s: event.target.value === 'default' ? null : event.target.value,
+                        })
+                    }
+                    label="Sort"
                     autoWidth
                     defaultValue="default"
                 >
@@ -92,29 +95,30 @@ export default function FeedSortControls({ length, page, itemsSort, itemsSortOrd
                 <Grid item key={i}>
                     <IconButton
                         onClick={() =>
-                            setUrlSearchParams(
-                                'f',
-                                _toPairs(
-                                    _pickBy(
-                                        {
-                                            ...itemsFilter,
-                                            [filterOptions[i]]:
-                                                filterNext[itemsFilter[filterOptions[i]] || ''],
-                                        },
-                                        Boolean,
-                                    ),
-                                )
-                                    .map((n) => n.join('~'))
-                                    .join('|'),
-                            )
+                            routerReplace({
+                                f: _pickBy(
+                                    {
+                                        ...(itemsFilter || {}),
+                                        [filterOptions[i]]:
+                                            filterNext[
+                                                itemsFilter &&
+                                                    itemsFilter[filterOptions[i] || undefined]
+                                            ],
+                                    },
+                                    Boolean,
+                                ),
+                            })
                         }
                     >
                         <Badge
-                            badgeContent={itemsFilter[filterOptions[i]] || ''}
-                            invisible={!itemsFilter[filterOptions[i]]}
+                            badgeContent={(itemsFilter && itemsFilter[filterOptions[i]]) || ''}
+                            invisible={!itemsFilter || !itemsFilter[filterOptions[i]]}
                             color="primary"
                             style={{
-                                color: itemsFilter[filterOptions[i]] ? '#558b2f' : 'inherit',
+                                color:
+                                    itemsFilter && itemsFilter[filterOptions[i]]
+                                        ? '#558b2f'
+                                        : 'inherit',
                             }}
                         >
                             {filterIcons[i]}
