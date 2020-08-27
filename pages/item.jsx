@@ -27,6 +27,7 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 import AccordionActions from '@material-ui/core/AccordionActions';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Typography from '@material-ui/core/Typography';
+import ExternalSourceIcon from 'mdi-material-ui/OpenInNew';
 import { H1, H2, P, Body1, Body2 } from '../components/Typography';
 import Link from '../components/Link';
 import Layout from '../components/Layout';
@@ -106,7 +107,7 @@ export default function Item() {
                 }
             });
 
-            setUserItemsUrl(resolveUrl('../../../_index/items/index.json', _itemUrl));
+            setUserItemsUrl(resolveUrl('../../../items/index.json', _itemUrl));
 
             const _profileUrl = resolveUrl('../../../profile.yaml', _itemUrl);
             fetchYaml(_profileUrl).then((obj) => obj && setUserProfile(obj));
@@ -152,6 +153,7 @@ export default function Item() {
                                 thumbnail_url: thumbnail,
                                 source,
                                 href,
+                                license,
                             }) => (
                                 <Grid key={thumbnail} item xs={12} sm={6}>
                                     <Card>
@@ -179,9 +181,19 @@ export default function Item() {
                                             >
                                                 Full Size
                                             </Button>
-                                            {href && (
-                                                <Button size="small" href={href} target="_blank">
+                                            {source && href && (
+                                                <Button
+                                                    disabled={!href}
+                                                    size="small"
+                                                    href={href}
+                                                    target="_blank"
+                                                >
                                                     {source || 'Link'}
+                                                </Button>
+                                            )}
+                                            {license && (
+                                                <Button disabled size="small">
+                                                    {license}
                                                 </Button>
                                             )}
                                         </CardActions>
@@ -298,7 +310,7 @@ export default function Item() {
                                     onClick={() => {}}
                                     component={Link}
                                     href="/items"
-                                    as={`/items?${linkParams('tag~', tag)}`}
+                                    as={`/items?${linkParams(`tag~${tag}`)}`}
                                     style={{ wordBreak: 'break-all' }}
                                 />
                             </Grid>
@@ -354,7 +366,7 @@ export default function Item() {
                                     as={`/items?i=${encodeURIComponent(
                                         shortUrl(
                                             resolveUrl(
-                                                `../../../_index/collections/${name}/aggregate/index.json`,
+                                                `../../../collections/${name}/aggregate/index.json`,
                                                 itemUrl,
                                             ),
                                         ),
@@ -500,7 +512,18 @@ export default function Item() {
                         <ListItem>
                             <ListItemText
                                 primary="Photo(s) License"
-                                secondary={<LicenseLink license={item.license} />}
+                                secondary={
+                                    <LicenseLink
+                                        license={
+                                            (item.photos &&
+                                                item.photos
+                                                    .map((i) => i.license)
+                                                    .filter(Boolean)
+                                                    .join(', ')) ||
+                                            item.license
+                                        }
+                                    />
+                                }
                             />
                         </ListItem>
                         <ListItem>
@@ -513,7 +536,7 @@ export default function Item() {
                 </PageSection>
             )}
             <Box mt={3} mb={5} style={{ textAlign: 'center' }}>
-                <ButtonGroup size="small">
+                <ButtonGroup size="small" variant="outlined">
                     <Button href={itemUrl} target="_blank" startIcon={<FileIcon type="yaml" />}>
                         YAML
                     </Button>
@@ -526,6 +549,17 @@ export default function Item() {
                             GitHub
                         </Button>
                     )}
+                    {item &&
+                        item.source &&
+                        item.source.map((source) => (
+                            <Button
+                                href={source.href}
+                                target="_blank"
+                                startIcon={<ExternalSourceIcon />}
+                            >
+                                {source.name}
+                            </Button>
+                        ))}
                 </ButtonGroup>
             </Box>
         </Layout>

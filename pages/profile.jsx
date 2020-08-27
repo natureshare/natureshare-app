@@ -20,7 +20,7 @@ export default function Profile() {
         if (i) {
             setUsername(new URL(i, process.env.CONTENT_HOST).pathname.split('/', 2)[1]);
             const url = resolveUrl(i, process.env.CONTENT_HOST);
-            setFeedUrl(shortUrl(resolveUrl(`./_index/items/index.json`, url)));
+            setFeedUrl(shortUrl(resolveUrl(`./items/index.json`, url)));
             fetchYaml(url).then((obj) => obj && setProfile(obj));
         }
     }, []);
