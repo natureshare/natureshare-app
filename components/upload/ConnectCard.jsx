@@ -86,7 +86,7 @@ export default function ConnectCard({ id, avatar, title, subheader, body }) {
                 title={<strong>{title}</strong>}
                 subheader={subheader}
             />
-            <CardContent>
+            <CardContent style={{ minHeight: '120px' }}>
                 <Typography variant="body2" component="div">
                     {body}
                 </Typography>

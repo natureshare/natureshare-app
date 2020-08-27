@@ -81,7 +81,7 @@ export default function Upload() {
                             id="flickr"
                             avatar="logos/flickr.png"
                             title="Flickr"
-                            subheader="Photos and videos"
+                            subheader="Import Photos and Videos"
                             body={
                                 <>
                                     Note, when you connect your Flickr account it will ask for
@@ -104,7 +104,7 @@ export default function Upload() {
                             id="dropbox"
                             avatar="logos/dropbox.png"
                             title="Dropbox"
-                            subheader="Photos"
+                            subheader="Import Photos"
                             body={
                                 <>
                                     When you connect to DropBox, a new folder will be created under{' '}
@@ -119,12 +119,17 @@ export default function Upload() {
                             id="google"
                             avatar="logos/google.png"
                             title="Google"
-                            subheader="Photos and YouTube"
-                            body={
-                                <>
-                                    Available <em>very</em> soon...
-                                </>
-                            }
+                            subheader="Import Photos and YouTube"
+                            body={<>Available soon...</>}
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <ConnectCard
+                            id="inaturalist"
+                            avatar="logos/inaturalist.png"
+                            title="iNaturalist"
+                            subheader="Import and Export Photos"
+                            body={<>Available soon...</>}
                         />
                     </Grid>
                 </Grid>
