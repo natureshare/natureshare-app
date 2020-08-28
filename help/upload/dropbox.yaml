@@ -5,7 +5,7 @@ sections:
       - image: ./dropbox/connect.png
         text: |
           Go to the upload page (also found the in side menu):
-          https://natureshare.org.au/upload
+          https://natureshare.org/upload
 
           Click on the *CONNECT* button for Dropbox you will then be redirected to the **official** Dropbox website.
 
@@ -69,7 +69,7 @@ sections:
           However, `license` *is* required and must be set to "CC BY 4.0" as NatureShare is all about sharing and only accepts openly licensed content.
 
           For assistance creating the metadata text, please go to:
-          https://natureshare.org.au/metadata
+          https://natureshare.org/metadata
 
           Here is an example file:
         code: |
