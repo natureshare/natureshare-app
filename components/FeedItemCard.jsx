@@ -15,12 +15,14 @@ import MapMarkerCheck from 'mdi-material-ui/MapMarkerCheckOutline';
 import Chip from '@material-ui/core/Chip';
 import Box from '@material-ui/core/Box';
 import LeafIcon from 'mdi-material-ui/Leaf';
+import UserIcon from 'mdi-material-ui/Account';
 import TagIcon from 'mdi-material-ui/Tag';
 import queryString from 'query-string';
 import { shortUrl } from '../utils/fetch';
 
 const icons = {
     itemCount: <ItemIcon />,
+    userCount: <UserIcon />,
     imageCount: <ImageIcon />,
     videoCount: <VideoIcon />,
     audioCount: <AudioIcon />,

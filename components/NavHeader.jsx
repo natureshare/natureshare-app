@@ -13,6 +13,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import HomeIcon from 'mdi-material-ui/Home';
+import CollectionsIcon from 'mdi-material-ui/Paperclip';
 import LogInIcon from 'mdi-material-ui/Login';
 import LogOutIcon from 'mdi-material-ui/Logout';
 import AboutIcon from 'mdi-material-ui/Information';
@@ -110,6 +111,12 @@ export default function NavHeader({ title, href }) {
                                 <HomeIcon />
                             </ListItemIcon>
                             <ListItemText primary="Home" />
+                        </ListItem>
+                        <ListItem button component={Link} href="/collections">
+                            <ListItemIcon>
+                                <CollectionsIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="Collections" />
                         </ListItem>
                         <Divider />
                         {process.env.API_HOST && (

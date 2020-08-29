@@ -82,7 +82,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
 
     const setParams = (routerPath) => {
         const { i, g, t, s, o, f } = queryString.parse(routerPath.split('?', 2)[1]);
-        const url = resolveUrl(i || defaultUrl || '/index.json', process.env.CONTENT_HOST);
+        const url = resolveUrl(i || defaultUrl || '', process.env.CONTENT_HOST);
         setFeedUrl(url);
         setFeedParams({
             groupByTag: g,
