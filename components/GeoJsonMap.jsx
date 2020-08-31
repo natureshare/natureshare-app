@@ -132,5 +132,6 @@ export default function GeoJsonMap({ geo }) {
         }
     }, [geo, geoBaseLayer.current, lMap.current]);
 
-    return <Paper ref={drawMap} elevation={1} style={{ height: '25vh', minHeight: '150px' }} />;
+    // Note, minHeight must be bigger than marker icon popup balloon.
+    return <Paper ref={drawMap} elevation={1} style={{ height: '25vh', minHeight: '220px' }} />;
 }

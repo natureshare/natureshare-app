@@ -6,12 +6,13 @@ import Typography from '@material-ui/core/Typography';
 import CardActions from '@material-ui/core/CardActions';
 import Button from '@material-ui/core/Button';
 import { useState, useEffect, useContext } from 'react';
-import { H1, H2, P } from '../components/Typography';
+import { H1, P } from '../components/Typography';
 import ConnectCard from '../components/upload/ConnectCard';
 import Layout from '../components/Layout';
 import { UserContext } from '../components/User';
 import LogInFormDialog from '../components/LogInFormDialog';
 import UserFormDialog from '../components/UserFormDialog';
+import Link from '../components/Link';
 
 export default function Upload() {
     const [user, setUser] = useContext(UserContext);
@@ -25,28 +26,19 @@ export default function Upload() {
     return (
         <Layout title="Upload" href="/upload/">
             <H1>Upload</H1>
-            <Box mt={3}>
-                <H2>Contribute your Photos and Video from the Cloud</H2>
-                <P>NatureShare is designed as a distributed and decentralised sharing hub.</P>
-                <P>
-                    This means you can choose where in the cloud your photos are stored and
-                    maintained.
-                </P>
-                <P>
-                    So far there is support for automatic sync with your Flickr, Dropbox, Google
-                    Photos and YouTube accounts. (More coming soon!)
-                </P>
-                <P>
-                    In addition, you can upload your photos to anywhere on the public web (eg, a
-                    blog or FTP server) and link them in to NatureShare.
-                </P>
-                <P>
-                    This means you stay in control of your files without needing to rely on any one
-                    big, centralised website or database. You can even create a mirror (aka backup)
-                    of this entire NatureShare website, on your own domain name, easily and{' '}
-                    <em>for free!</em>
-                </P>
-            </Box>
+            <P>NatureShare is designed as a distributed and decentralised sharing hub.</P>
+            <P>
+                <Button
+                    component={Link}
+                    variant="outlined"
+                    color="primary"
+                    size="small"
+                    href="help/[topic]/[item]"
+                    as="/help/d14n/info"
+                >
+                    More info
+                </Button>
+            </P>
             {user && !user.name && (
                 <Box mt={3}>
                     <LogInFormDialog open={openLogInForm} setOpen={setOpenLogInForm} />
@@ -76,6 +68,15 @@ export default function Upload() {
                     alignItems="flex-start"
                     spacing={2}
                 >
+                    <Grid item xs={12} sm={6}>
+                        <ConnectCard
+                            id="inaturalist"
+                            avatar="logos/inaturalist.png"
+                            title="iNaturalist"
+                            subheader="Import and Export Observations"
+                            body={<>Available soon...</>}
+                        />
+                    </Grid>
                     <Grid item xs={12} sm={6}>
                         <ConnectCard
                             id="flickr"
@@ -119,16 +120,7 @@ export default function Upload() {
                             id="google"
                             avatar="logos/google.png"
                             title="Google"
-                            subheader="Import Photos and YouTube"
-                            body={<>Available soon...</>}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <ConnectCard
-                            id="inaturalist"
-                            avatar="logos/inaturalist.png"
-                            title="iNaturalist"
-                            subheader="Import and Export Photos"
+                            subheader="Import Photos and YouTube Videos"
                             body={<>Available soon...</>}
                         />
                     </Grid>

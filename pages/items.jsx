@@ -35,9 +35,9 @@ export default function Items() {
         <FeedWithMap>
             {({ feedUrl, getParams, groupByTag, filterTags, items }) => (
                 <>
-                    <Box mt={1}>
-                        <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
-                            {(groupByTag || (filterTags && filterTags.length !== 0)) && (
+                    {(groupByTag || (filterTags && filterTags.length !== 0)) && (
+                        <Box mt={1}>
+                            <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
                                 <Typography variant="h4">
                                     <Link
                                         href="/items"
@@ -46,28 +46,30 @@ export default function Items() {
                                         Items
                                     </Link>
                                 </Typography>
-                            )}
-                            {filterTags &&
-                                filterTags.map((t, i) => (
-                                    <Typography key={t} variant="h4">
-                                        <Link
-                                            href="/items"
-                                            as={`/items?${getParams({
-                                                g: '',
-                                                t: filterTags.slice(0, i + 1),
-                                            })}`}
-                                        >
-                                            {t.split('~', 2)[1]}
-                                        </Link>
+                                {filterTags &&
+                                    filterTags.map((t, i) => (
+                                        <Typography key={t} variant="h4">
+                                            <Link
+                                                href="/items"
+                                                as={`/items?${getParams({
+                                                    g: '',
+                                                    t: filterTags.slice(0, i + 1),
+                                                })}`}
+                                            >
+                                                {t.split('~', 2)[1]}
+                                            </Link>
+                                        </Typography>
+                                    ))}
+                                {groupByTag && (
+                                    <Typography variant="h4">
+                                        {groupByTag.split('~', 1)[0]}
                                     </Typography>
-                                ))}
-                            {groupByTag && (
-                                <Typography variant="h4">{groupByTag.split('~', 1)[0]}</Typography>
-                            )}
-                        </Breadcrumbs>
-                    </Box>
+                                )}
+                            </Breadcrumbs>
+                        </Box>
+                    )}
                     {feedUrl && (
-                        <Box mt={3}>
+                        <Box mt={2}>
                             <Grid
                                 container
                                 direction="row"
@@ -125,14 +127,15 @@ export default function Items() {
                             </Grid>
                         </Box>
                     )}
-                    {filterTags &&
-                        filterTags
-                            .filter((t) => _startsWith(t, 'id~'))
-                            .map((t, i) => (
-                                <Box key={t} mt={i === 0 ? 3 : 0}>
-                                    <IdHeader indexUrl={feedUrl} id={t.split('~', 2)[1]} />
-                                </Box>
-                            ))}
+                    {filterTags && filterTags.filter((t) => _startsWith(t, 'id~')).length !== 0 && (
+                        <Box mt={2}>
+                            {filterTags
+                                .filter((t) => _startsWith(t, 'id~'))
+                                .map((t) => (
+                                    <IdHeader key={t} indexUrl={feedUrl} id={t.split('~', 2)[1]} />
+                                ))}
+                        </Box>
+                    )}
                 </>
             )}
         </FeedWithMap>

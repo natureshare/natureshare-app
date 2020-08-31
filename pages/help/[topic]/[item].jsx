@@ -46,7 +46,7 @@ export default function Help({ topic, content }) {
             <H2>{content.title}</H2>
             {content.sections &&
                 content.sections.map((section) => (
-                    <Box mt={3}>
+                    <Box mt={3} style={{ overflowWrap: 'break-word' }}>
                         <H3>{section.title}</H3>
                         {section.steps.map((step) => (
                             <Box mt={3}>
@@ -77,7 +77,7 @@ export default function Help({ topic, content }) {
                                         px={2}
                                         py={1}
                                         component={Paper}
-                                        style={{ overflowX: 'scroll' }}
+                                        style={{ overflowX: 'auto' }}
                                     >
                                         <pre>
                                             <code>{step.code}</code>

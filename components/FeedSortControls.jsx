@@ -1,29 +1,14 @@
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
-import _pickBy from 'lodash/pickBy';
 import IconButton from '@material-ui/core/IconButton';
 import SortAscendingIcon from 'mdi-material-ui/SortAlphabeticalAscending';
 import SortDescendingIcon from 'mdi-material-ui/SortAlphabeticalDescending';
-import ImageIcon from 'mdi-material-ui/Camera';
-import MapMarkerIcon from 'mdi-material-ui/MapMarkerCheckOutline';
-import Badge from '@material-ui/core/Badge';
+import GridLargeIcon from 'mdi-material-ui/GridLarge';
+import GridIcon from 'mdi-material-ui/Grid';
 import Grid from '@material-ui/core/Grid';
 import { useRouter } from 'next/router';
 
-const filterNext = {
-    undefined: 'yes',
-    yes: 'no',
-    no: undefined,
-};
-
-export default function FeedSortControls({
-    length,
-    page,
-    itemsSort,
-    itemsSortOrder,
-    itemsFilter,
-    getParams,
-}) {
+export default function FeedSortControls({ itemsSort, itemsSortOrder, viewGrid, getParams }) {
     const router = useRouter();
 
     const sortOptions = {
@@ -40,16 +25,7 @@ export default function FeedSortControls({
         Ids: '_meta.idCount',
         Tags: '_meta.tagsCount',
         Location: '_geo.coordinates',
-    };
-
-    const filterOptions = {
-        Image: 'image',
-        Location: '_geo.coordinates',
-    };
-
-    const filterIcons = {
-        Image: <ImageIcon />,
-        Location: <MapMarkerIcon />,
+        Users: '_meta.userCount',
     };
 
     const routerReplace = (opt) => {
@@ -58,18 +34,15 @@ export default function FeedSortControls({
     };
 
     return (
-        <Grid container direction="row" justify="flex-start" alignItems="center">
+        <Grid
+            container
+            direction="row"
+            justify="flex-start"
+            alignItems="center"
+            alignContent="center"
+            spacing={1}
+        >
             <Grid item>
-                <IconButton
-                    disabled={!itemsSort}
-                    color="primary"
-                    onClick={() => routerReplace({ o: itemsSortOrder === 'asc' ? '' : 'asc' })}
-                >
-                    {itemsSortOrder === 'asc' && <SortAscendingIcon />}
-                    {itemsSortOrder !== 'asc' && <SortDescendingIcon />}
-                </IconButton>
-            </Grid>
-            <Grid item style={{ paddingRight: '10px' }}>
                 <Select
                     value={itemsSort || 'default'}
                     onChange={(event) =>
@@ -91,44 +64,24 @@ export default function FeedSortControls({
                     ))}
                 </Select>
             </Grid>
-            {Object.keys(filterOptions).map((i) => (
-                <Grid item key={i}>
-                    <IconButton
-                        onClick={() =>
-                            routerReplace({
-                                f: _pickBy(
-                                    {
-                                        ...(itemsFilter || {}),
-                                        [filterOptions[i]]:
-                                            filterNext[
-                                                itemsFilter &&
-                                                    itemsFilter[filterOptions[i] || undefined]
-                                            ],
-                                    },
-                                    Boolean,
-                                ),
-                            })
-                        }
-                    >
-                        <Badge
-                            badgeContent={(itemsFilter && itemsFilter[filterOptions[i]]) || ''}
-                            invisible={!itemsFilter || !itemsFilter[filterOptions[i]]}
-                            color="primary"
-                            style={{
-                                color:
-                                    itemsFilter && itemsFilter[filterOptions[i]]
-                                        ? '#558b2f'
-                                        : 'inherit',
-                            }}
-                        >
-                            {filterIcons[i]}
-                        </Badge>
-                    </IconButton>
-                </Grid>
-            ))}
-            <Grid item style={{ marginLeft: '10px' }}>
-                {length} items
-                {page && page !== 1 && ` (page ${page})`}
+            <Grid item>
+                <IconButton
+                    disabled={!itemsSort}
+                    color="primary"
+                    onClick={() => routerReplace({ o: itemsSortOrder === 'asc' ? '' : 'asc' })}
+                >
+                    {itemsSortOrder === 'asc' && <SortAscendingIcon />}
+                    {itemsSortOrder !== 'asc' && <SortDescendingIcon />}
+                </IconButton>
+            </Grid>
+            <Grid item>
+                <IconButton
+                    color={viewGrid === 'lg' ? 'primary' : undefined}
+                    onClick={() => routerReplace({ v: viewGrid === 'lg' ? '' : 'lg' })}
+                >
+                    {viewGrid === 'lg' && <GridLargeIcon />}
+                    {viewGrid !== 'lg' && <GridIcon />}
+                </IconButton>
             </Grid>
         </Grid>
     );

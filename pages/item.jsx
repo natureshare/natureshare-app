@@ -28,6 +28,8 @@ import AccordionActions from '@material-ui/core/AccordionActions';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Typography from '@material-ui/core/Typography';
 import ExternalSourceIcon from 'mdi-material-ui/OpenInNew';
+import HistoryIcon from 'mdi-material-ui/FormatListNumbered';
+import ChangelogIcon from 'mdi-material-ui/TimelineText';
 import { H1, H2, P, Body1, Body2 } from '../components/Typography';
 import Link from '../components/Link';
 import Layout from '../components/Layout';
@@ -116,12 +118,24 @@ export default function Item() {
         }
     }, []);
 
-    const githubUrl = useMemo(() => {
+    const githubCommitsUrl = useMemo(() => {
         if (itemUrl) {
             if (_startsWith(shortUrl(itemUrl), './')) {
                 return new URL(
                     shortUrl(itemUrl),
-                    `https://github.com/${process.env.GH_CONTENT_PATH}/tree/master/`,
+                    `https://github.com/${process.env.GH_CONTENT_PATH}/commits/master/`,
+                ).href;
+            }
+        }
+        return null;
+    }, [itemUrl]);
+
+    const githubBlameUrl = useMemo(() => {
+        if (itemUrl) {
+            if (_startsWith(shortUrl(itemUrl), './')) {
+                return new URL(
+                    shortUrl(itemUrl),
+                    `https://github.com/${process.env.GH_CONTENT_PATH}/blame/master/`,
                 ).href;
             }
         }
@@ -540,13 +554,18 @@ export default function Item() {
                     <Button href={itemUrl} target="_blank" startIcon={<FileIcon type="yaml" />}>
                         YAML
                     </Button>
-                    {githubUrl && (
+                    {githubBlameUrl && (
+                        <Button href={githubBlameUrl} target="_blank" startIcon={<HistoryIcon />}>
+                            History
+                        </Button>
+                    )}
+                    {githubCommitsUrl && (
                         <Button
-                            href={githubUrl}
+                            href={githubCommitsUrl}
                             target="_blank"
-                            startIcon={<FileIcon type="git" />}
+                            startIcon={<ChangelogIcon />}
                         >
-                            GitHub
+                            Changelog
                         </Button>
                     )}
                     {item &&

@@ -38,12 +38,13 @@ const ItemCard = ({
     _geo,
     _meta,
     hideTitle,
+    viewGrid,
 }) => (
     <Card>
         <CardActionArea>
             <CardMedia
                 style={{
-                    height: '140px',
+                    height: viewGrid === 'lg' ? '260px' : '140px',
                     backgroundColor: '#EEE',
                     textAlign: 'right',
                 }}
@@ -54,7 +55,7 @@ const ItemCard = ({
                         variant="body1"
                         style={{
                             color: 'grey',
-                            lineHeight: '140px',
+                            lineHeight: viewGrid === 'lg' ? '260px' : '140px',
                             textAlign: 'center',
                         }}
                     >

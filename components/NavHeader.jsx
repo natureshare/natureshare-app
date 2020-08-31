@@ -17,6 +17,7 @@ import CollectionsIcon from 'mdi-material-ui/Paperclip';
 import LogInIcon from 'mdi-material-ui/Login';
 import LogOutIcon from 'mdi-material-ui/Logout';
 import AboutIcon from 'mdi-material-ui/Information';
+import HelpIcon from 'mdi-material-ui/HelpCircle';
 import UploadIcon from 'mdi-material-ui/CloudUpload';
 import PersonIcon from '@material-ui/icons/Person';
 import ChevronRightIcon from 'mdi-material-ui/ChevronRight';
@@ -169,6 +170,12 @@ export default function NavHeader({ title, href }) {
                             </>
                         )}
                         <Divider />
+                        <ListItem button component={Link} href="/help" as="/help">
+                            <ListItemIcon>
+                                <HelpIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="Help" />
+                        </ListItem>
                         <ListItem button component={Link} href="/about" as="/about">
                             <ListItemIcon>
                                 <AboutIcon />

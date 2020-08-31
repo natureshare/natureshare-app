@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo, useCallback, useReducer } from 'react';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Head from 'next/head';
-import _lines from 'underscore.string/lines';
+import _stripTags from 'underscore.string/stripTags';
 import _startsWith from 'lodash/startsWith';
 import _orderBy from 'lodash/orderBy';
 import _get from 'lodash/get';
@@ -17,6 +17,9 @@ import { useRouter } from 'next/router';
 import queryString from 'query-string';
 import _toPairs from 'lodash/toPairs';
 import _fromPairs from 'lodash/fromPairs';
+import Collapse from '@material-ui/core/Collapse';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import IconButton from '@material-ui/core/IconButton';
 import { resolveUrl, fetchJson, shortUrl } from '../utils/fetch';
 import FeedItemsGrid from './FeedItemsGrid';
 import GeoJsonMap from './GeoJsonMap';
@@ -24,6 +27,7 @@ import Layout from './Layout';
 import { H1, P } from './Typography';
 import FileIcon from './FileIcon';
 import FeedSortControls from './FeedSortControls';
+import FeedFilterControls from './FeedFilterControls';
 
 const PER_PAGE = 52;
 
@@ -55,11 +59,12 @@ export default function FeedWithMap({ defaultUrl, children }) {
     const [feed, setFeed] = useState({});
     const [feedItems, setFeedItems] = useState([]);
     const [feedNextUrl, setFeedNextUrl] = useState(null);
+    const [openDescription, setOpenDescription] = useState(false);
 
     const router = useRouter();
 
     const getParams = useCallback(
-        ({ i, g, t, s, o, f }) => {
+        ({ i, g, t, s, o, f, v, q }) => {
             const params = _pickBy(
                 {
                     i: shortUrl(i !== undefined ? i : feedUrl),
@@ -72,6 +77,8 @@ export default function FeedWithMap({ defaultUrl, children }) {
                     )
                         .map((n) => n.join('~'))
                         .join('|'),
+                    v: v !== undefined ? v : feedParams.viewGrid,
+                    q: q !== undefined ? q : feedParams.searchText,
                 },
                 Boolean,
             );
@@ -81,7 +88,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
     );
 
     const setParams = (routerPath) => {
-        const { i, g, t, s, o, f } = queryString.parse(routerPath.split('?', 2)[1]);
+        const { i, g, t, s, o, f, v, q } = queryString.parse(routerPath.split('?', 2)[1]);
         const url = resolveUrl(i || defaultUrl || '', process.env.CONTENT_HOST);
         setFeedUrl(url);
         setFeedParams({
@@ -90,6 +97,8 @@ export default function FeedWithMap({ defaultUrl, children }) {
             itemsSort: s,
             itemsSortOrder: o,
             itemsFilter: f ? _fromPairs(f.split('|').map((n) => n.split('~', 2))) : undefined,
+            viewGrid: v,
+            searchText: q,
         });
     };
 
@@ -116,7 +125,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
                     });
             }
         }
-    }, [feedUrl, feedParams, page]);
+    }, [feedUrl, feedParams.groupByTag, feedParams.filterTags, page]);
 
     useEffect(() => {
         setError(null);
@@ -250,10 +259,24 @@ export default function FeedWithMap({ defaultUrl, children }) {
                 });
             }
 
+            if (feedParams.searchText) {
+                items = items.filter(
+                    (item) =>
+                        item.title &&
+                        RegExp(feedParams.searchText.replace(/\./g, '\\.'), 'i').test(item.title),
+                );
+            }
+
             return items;
         }
         return [];
-    }, [feedItems, feedParams.itemsFilter, feedParams.filterTags, feedParams.groupByTag]);
+    }, [
+        feedItems,
+        feedParams.itemsFilter,
+        feedParams.filterTags,
+        feedParams.groupByTag,
+        feedParams.searchText,
+    ]);
 
     const itemsSorted = useMemo(() => {
         const { itemsSort, itemsSortOrder } = feedParams;
@@ -325,16 +348,29 @@ export default function FeedWithMap({ defaultUrl, children }) {
                     />
                 </Head>
             )}
-            <H1>{feed.title || error || 'Loading...'}</H1>
-            {feed.description && (
-                <>
-                    {_lines(feed.description)
-                        .filter(Boolean)
-                        .map((p, i) => (
-                            <P key={i}>{p}</P>
-                        ))}
-                </>
-            )}
+            <Box mb={2}>
+                <H1>{feed.title || error || 'Loading...'}</H1>
+                {feed.description && (
+                    <Collapse
+                        in={feed.description.length < 300 || openDescription}
+                        timeout="auto"
+                        collapsedHeight={feed.description.length < 300 ? 0 : 95}
+                    >
+                        {feed.description.length >= 300 && (
+                            <IconButton
+                                onClick={() => setOpenDescription(!openDescription)}
+                                style={{
+                                    float: 'right',
+                                    transform: openDescription ? 'rotate(180deg)' : 'rotate(0deg)',
+                                }}
+                            >
+                                <ExpandMoreIcon />
+                            </IconButton>
+                        )}
+                        <P>{_stripTags(feed.description)}</P>
+                    </Collapse>
+                )}
+            </Box>
             {children &&
                 children({
                     feedUrl,
@@ -343,25 +379,35 @@ export default function FeedWithMap({ defaultUrl, children }) {
                     getParams,
                     items: itemsFiltered,
                 })}
-            <Box mt={3}>
+            <Box mt={1}>
+                <FeedFilterControls
+                    {...{
+                        length: itemsFiltered.length,
+                        page,
+                        itemsFilter: feedParams.itemsFilter,
+                        searchText: feedParams.searchText,
+                        getParams,
+                    }}
+                />
+            </Box>
+            <Box mt={1}>
                 <GeoJsonMap geo={geo} />
             </Box>
             <Box mt={1}>
                 <FeedSortControls
                     {...{
-                        length: itemsFiltered.length,
-                        page,
                         itemsSort: feedParams.itemsSort,
                         itemsSortOrder: feedParams.itemsSortOrder,
-                        itemsFilter: feedParams.itemsFilter,
+                        viewGrid: feedParams.viewGrid,
                         getParams,
                     }}
                 />
             </Box>
-            <Box pt={1} id="feedItemsGrid">
+            <Box mt={1} id="feedItemsGrid">
                 {feed.title && itemsPage.length === 0 && <P>No items.</P>}
                 <FeedItemsGrid
                     items={itemsPage}
+                    viewGrid={feedParams.viewGrid}
                     hideTitle={
                         !feedParams.groupByTag &&
                         feedParams.filterTags &&

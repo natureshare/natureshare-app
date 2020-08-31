@@ -2,6 +2,7 @@
 /* global URL process */
 
 import YAML from 'js-yaml';
+import _startsWith from 'lodash/startsWith';
 
 const opt = {
     cache: 'default',
@@ -92,5 +93,15 @@ export const fetchYaml = (src, host) =>
             .catch(() => resolve(false)),
     );
 
-export const shortUrl = (url) =>
-    url ? url.replace(process.env.CONTENT_HOST, './').replace(/\/$/, '') : url;
+export const shortUrl = (url) => {
+    if (url) {
+        let shortened = url.replace(/\/$/, ''); // Remove trailing slash
+        [process.env.CONTENT_HOST, process.env.CONTENT_HOST_DEV].forEach((host) => {
+            if (host && _startsWith(shortened, host)) {
+                shortened = shortened.replace(RegExp(`^${host}`), './');
+            }
+        });
+        return shortened;
+    }
+    return url;
+};
