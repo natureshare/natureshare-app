@@ -1,0 +1,21 @@
+title: Text Search
+sections:
+  - title: Regular Expression Syntax
+    steps:
+      - title: Start of the text
+        text: |
+          Add a ^ to the start of your search. For example:
+        code:
+          ^Acacia
+      - title: End of the text
+        text: |
+          Add a $ at the end of your search. For example:
+        code:
+          spp.$
+      - title: More options
+        text: |
+          Please see:
+
+          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
+      - title: Dot
+        text: Please note the stop/dot is always escaped to make search easier for most people.
