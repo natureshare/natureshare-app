@@ -17,8 +17,8 @@ sections:
 
           Note, when you connect your Flickr account it says "including private content". Please be assured that NatureShare will only ever access and sync the photos you have already set to **public** visibility.
 
-          You can review the code here:
-          https://github.com/natureshare/natureshare-scripts/blob/master/importers/handler/flickr.js
+          Source code is available for review here:
+          https://github.com/natureshare/natureshare-scripts/blob/master/actions/importers/flickr.js
 
       - title: Return
         text: |
