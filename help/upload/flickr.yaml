@@ -46,9 +46,7 @@ sections:
 
           The description must start with "--- #natureshare.org".
 
-          Note, `id`, `description` and `tags` are *not* required. For example, if you do not know the id (species), remove that line from the file.
-
-          However, `license` *is* required and must be set to "CC BY 4.0" as NatureShare is all about sharing and only accepts openly licensed content.
+          Note, `id`, `description`, `tags` and `license` are *not* required. For example, if you do not know the id (species), remove that line from the file.
 
           For assistance creating the metadata text, please go to:
           https://natureshare.org/metadata

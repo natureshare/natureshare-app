@@ -3,24 +3,24 @@ sections:
   - title: Import and Export Observations
     steps:
       - text: |
-            iNaturalist is one of the world’s most popular nature apps and is great for identifying the plants and animals around you.
+            iNaturalist is one of the world’s most popular nature apps and is great for identifying plants and animals.
 
             https://www.inaturalist.org/pages/about
 
-            Upon sync, your NatureShare item records will be uploaded to iNaturalist as observations. Photo thumbnails are uploaded (no audio or video) and only the primary (first) identification is transferred.
+            Upon sync, your NatureShare records will be submitted to iNaturalist as observations. Photos are uploaded (but not video nor audio) and only the primary (first) identification of each record can be transferred.
 
-            Observations under your iNaturalist account will be imported to the NatureShare dataset as plain-text YAML files and indexed as standards-compliant JSONFeed, GeoJSON, Atom and RSS files. Note, photos are not downloaded - a link is created to the original file stored on the iNaturalist servers.
+            Observations under your iNaturalist account will be imported to your NatureShare dataset as plain-text YAML files and indexed as standards-compliant JSONFeed, GeoJSON, Atom and RSS files. Note, photos are not downloaded - a link is created to the original file stored on the iNaturalist servers.
 
-            To avoid flooding the iNaturalist API, imports are limited to 1000 items per sync and uploads are currently limited to 50 observations per sync.
+            To avoid flooding the iNaturalist API, uploads are currently limited to 100 observations per sync.
 
-            Only thumbnails photo sizes (not the originals) are uploaded to reduce the load on iNaturalist servers. A link is created back to your original item on NatureShare.org.
+            Only photo thumbnail sizes (not the originals) are uploaded to reduce the load on iNaturalist servers. A link (href) is created back to your original item page on NatureShare.org.
 
             Source code is available for review here:
             https://github.com/natureshare/natureshare-scripts/blob/master/actions/importers/inaturalist.js
 
-  - title: Connect
+  - title: Connect Your Account
     steps:
-      - title: Upload Page
+      - title: Go To Upload Page
         image: ./inaturalist/connect.png
         text: |
           Go to the NatureShare *Upload* page (also found the in side menu):
@@ -29,7 +29,7 @@ sections:
 
           Click the CONNECT button in the iNaturalist box and you will be redirected to the **official** iNaturalist website.
 
-      - title: Auth
+      - title: iNaturalist Authorisation
         image: ./inaturalist/auth.png
         text: |
           Click the green *Authorize* button.
