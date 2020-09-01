@@ -17,8 +17,8 @@ sections:
 
           Note, when you connect your Flickr account it says "including private content". Please be assured that NatureShare will only ever access and sync the photos you have already set to **public** visibility.
 
-          You can review the code here:
-          https://github.com/natureshare/natureshare-scripts/blob/master/importers/handler/flickr.js
+          Source code is available for review here:
+          https://github.com/natureshare/natureshare-scripts/blob/master/actions/importers/flickr.js
 
       - title: Return
         text: |
@@ -46,9 +46,7 @@ sections:
 
           The description must start with "--- #natureshare.org".
 
-          Note, `id`, `description` and `tags` are *not* required. For example, if you do not know the id (species), remove that line from the file.
-
-          However, `license` *is* required and must be set to "CC BY 4.0" as NatureShare is all about sharing and only accepts openly licensed content.
+          Note, `id`, `description`, `tags` and `license` are *not* required. For example, if you do not know the id (species), remove that line from the file.
 
           For assistance creating the metadata text, please go to:
           https://natureshare.org/metadata

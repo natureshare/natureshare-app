@@ -1,4 +1,56 @@
 title: iNaturalist
 sections:
-  - steps:
-      - text: Available soon.
+  - title: Import and Export Observations
+    steps:
+      - text: |
+            iNaturalist is one of the world’s most popular nature apps and is great for identifying plants and animals.
+
+            https://www.inaturalist.org/pages/about
+
+            Upon sync, your NatureShare records will be submitted to iNaturalist as observations. Photos are uploaded (but not video nor audio) and only the primary (first) identification of each record can be transferred.
+
+            Observations under your iNaturalist account will be imported to your NatureShare dataset as plain-text YAML files and indexed as standards-compliant JSONFeed, GeoJSON, Atom and RSS files. Note, photos are not downloaded - a link is created to the original file stored on the iNaturalist servers.
+
+            To avoid flooding the iNaturalist API, uploads are currently limited to 100 observations per sync.
+
+            Only photo thumbnail sizes (not the originals) are uploaded to reduce the load on iNaturalist servers. A link (href) is created back to your original item page on NatureShare.org.
+
+            Source code is available for review here:
+            https://github.com/natureshare/natureshare-scripts/blob/master/actions/importers/inaturalist.js
+
+  - title: Connect Your Account
+    steps:
+      - title: Go To Upload Page
+        image: ./inaturalist/connect.png
+        text: |
+          Go to the NatureShare *Upload* page (also found the in side menu):
+
+          https://natureshare.org/upload
+
+          Click the CONNECT button in the iNaturalist box and you will be redirected to the **official** iNaturalist website.
+
+      - title: iNaturalist Authorisation
+        image: ./inaturalist/auth.png
+        text: |
+          Click the green *Authorize* button.
+
+      - title: Return
+        text: |
+          You should then return to the *Upload* page.
+
+  - title: Sync
+    steps:
+      - image: ./inaturalist/sync.png
+        text: |
+          To import and export observations, click on the *SYNC NOW* button.
+
+      - title: Please Wait
+        text: |
+          Sync can be a slow process and your computer may also cache this website for up to one day.
+
+          Please return later to see your observations appear on NatureShare.
+
+
+
+
+

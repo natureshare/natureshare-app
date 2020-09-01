@@ -17,6 +17,7 @@ import queryString from 'query-string';
 import _startsWith from 'lodash/startsWith';
 import _endsWith from 'lodash/endsWith';
 import _sortBy from 'lodash/sortBy';
+import _isArray from 'lodash/isArray';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -30,6 +31,7 @@ import Typography from '@material-ui/core/Typography';
 import ExternalSourceIcon from 'mdi-material-ui/OpenInNew';
 import HistoryIcon from 'mdi-material-ui/FormatListNumbered';
 import ChangelogIcon from 'mdi-material-ui/TimelineText';
+import moment from 'moment';
 import { H1, H2, P, Body1, Body2 } from '../components/Typography';
 import Link from '../components/Link';
 import Layout from '../components/Layout';
@@ -142,13 +144,19 @@ export default function Item() {
         return null;
     }, [itemUrl]);
 
+    const dateHeading = (date) => {
+        try {
+            return moment.parseZone(date).format('Do MMM YYYY, h:mma');
+        } catch (e) {
+            return date;
+        }
+    };
+
     return (
         <Layout title={userName} href={`/items?i=${shortUrl(userItemsUrl)}`}>
             <H1>
-                {(item && item.datetime && item.datetime.replace('T', ' ').replace('Z', '')) ||
-                    (item &&
-                        item.created_at &&
-                        item.created_at.replace('T', ' ').replace('Z', '')) ||
+                {(item && item.datetime && dateHeading(item.datetime)) ||
+                    (item && item.created_at && dateHeading(item.created_at)) ||
                     'Loading...'}
             </H1>
             <H2>by {(userProfile && userProfile.name) || userName}</H2>
@@ -298,7 +306,11 @@ export default function Item() {
                                         secondary={
                                             <>
                                                 {common && <Body1>{common}</Body1>}
-                                                {by && <Body2>id. by {by}</Body2>}
+                                                {by && (
+                                                    <Body2>
+                                                        id. by {_isArray(by) ? by.join(', ') : by}
+                                                    </Body2>
+                                                )}
                                             </>
                                         }
                                     />
@@ -462,7 +474,7 @@ export default function Item() {
                         {item.datetime && (
                             <ListItem>
                                 <ListItemText
-                                    primary="Observation"
+                                    primary="Date-Time"
                                     secondary={`${item.datetime}`.replace('T', ' ')}
                                 />
                             </ListItem>

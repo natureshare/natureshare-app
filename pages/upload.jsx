@@ -74,7 +74,13 @@ export default function Upload() {
                             avatar="logos/inaturalist.png"
                             title="iNaturalist"
                             subheader="Import and Export Observations"
-                            body={<>Available soon...</>}
+                            body={
+                                <>
+                                    iNaturalist is one of the world’s most popular nature websites
+                                    and is great for identifying plants and animals. Please see help
+                                    for more information.
+                                </>
+                            }
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
