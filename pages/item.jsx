@@ -6,7 +6,6 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import CardMedia from '@material-ui/core/CardMedia';
 import Chip from '@material-ui/core/Chip';
 import Button from '@material-ui/core/Button';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
 import CardActions from '@material-ui/core/CardActions';
 import { useState, useEffect, useMemo } from 'react';
 import List from '@material-ui/core/List';
@@ -41,6 +40,7 @@ import ActionFormDialog from '../components/ActionFormDialog';
 import { resolveUrl, fetchYaml, shortUrl } from '../utils/fetch';
 import FileIcon from '../components/FileIcon';
 import Video from '../components/item/Video';
+import ButtonGrid from '../components/ButtonGrid';
 
 const PageSection = ({ title, children, actions }) => (
     <Accordion defaultExpanded>
@@ -225,7 +225,7 @@ export default function Item() {
                         )}
                     </Grid>
                     <Dialog
-                        open={showPhoto}
+                        open={Boolean(showPhoto)}
                         onClose={() => setShowPhoto(false)}
                         fullWidth
                         maxWidth="sm"
@@ -237,7 +237,10 @@ export default function Item() {
                         <DialogActions>
                             <Button
                                 onClick={() => {
-                                    window.location = showPhoto;
+                                    setShowPhoto(false);
+                                    setTimeout(() => {
+                                        window.location = showPhoto;
+                                    }, 50);
                                 }}
                             >
                                 Ok
@@ -561,13 +564,25 @@ export default function Item() {
                     </List>
                 </PageSection>
             )}
-            <Box mt={3} mb={5} style={{ textAlign: 'center' }}>
-                <ButtonGroup size="small" variant="outlined">
-                    <Button href={itemUrl} target="_blank" startIcon={<FileIcon type="yaml" />}>
+            <Box mt={3} mb={3}>
+                <ButtonGrid>
+                    <Button
+                        href={itemUrl}
+                        target="_blank"
+                        startIcon={<FileIcon type="yaml" />}
+                        size="small"
+                        variant="outlined"
+                    >
                         YAML
                     </Button>
                     {githubBlameUrl && (
-                        <Button href={githubBlameUrl} target="_blank" startIcon={<HistoryIcon />}>
+                        <Button
+                            href={githubBlameUrl}
+                            target="_blank"
+                            startIcon={<HistoryIcon />}
+                            size="small"
+                            variant="outlined"
+                        >
                             History
                         </Button>
                     )}
@@ -576,6 +591,8 @@ export default function Item() {
                             href={githubCommitsUrl}
                             target="_blank"
                             startIcon={<ChangelogIcon />}
+                            size="small"
+                            variant="outlined"
                         >
                             Changelog
                         </Button>
@@ -584,14 +601,17 @@ export default function Item() {
                         item.source &&
                         item.source.map((source) => (
                             <Button
+                                key={source}
                                 href={source.href}
                                 target="_blank"
                                 startIcon={<ExternalSourceIcon />}
+                                size="small"
+                                variant="outlined"
                             >
                                 {source.name}
                             </Button>
                         ))}
-                </ButtonGroup>
+                </ButtonGrid>
             </Box>
         </Layout>
     );

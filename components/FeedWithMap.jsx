@@ -4,7 +4,6 @@
 import Box from '@material-ui/core/Box';
 import { useState, useEffect, useMemo, useCallback, useReducer } from 'react';
 import Button from '@material-ui/core/Button';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Head from 'next/head';
 import _stripTags from 'underscore.string/stripTags';
 import _startsWith from 'lodash/startsWith';
@@ -28,6 +27,7 @@ import { H1, P } from './Typography';
 import FileIcon from './FileIcon';
 import FeedSortControls from './FeedSortControls';
 import FeedFilterControls from './FeedFilterControls';
+import ButtonGrid from './ButtonGrid';
 
 const PER_PAGE = 52;
 
@@ -426,8 +426,10 @@ export default function FeedWithMap({ defaultUrl, children }) {
             </Box>
             <Box mt={5} style={{ textAlign: 'center' }}>
                 {feedUrl && !feedParams.filterTags && !feedParams.groupByTag && (
-                    <ButtonGroup size="small">
+                    <ButtonGrid>
                         <Button
+                            size="small"
+                            variant="outlined"
                             startIcon={<FileIcon type="json" />}
                             href={resolveUrl(`./index.json`, feedUrl)}
                             target="_blank"
@@ -435,6 +437,8 @@ export default function FeedWithMap({ defaultUrl, children }) {
                             JSON
                         </Button>
                         <Button
+                            size="small"
+                            variant="outlined"
                             startIcon={<FileIcon type="json" />}
                             href={resolveUrl(`./index.geo.json`, feedUrl)}
                             target="_blank"
@@ -442,6 +446,8 @@ export default function FeedWithMap({ defaultUrl, children }) {
                             GeoJSON
                         </Button>
                         <Button
+                            size="small"
+                            variant="outlined"
                             startIcon={<FileIcon type="xml" />}
                             href={resolveUrl(`./index.rss.xml`, feedUrl)}
                             target="_blank"
@@ -449,13 +455,15 @@ export default function FeedWithMap({ defaultUrl, children }) {
                             RSS
                         </Button>
                         <Button
+                            size="small"
+                            variant="outlined"
                             startIcon={<FileIcon type="xml" />}
                             href={resolveUrl(`./index.atom.xml`, feedUrl)}
                             target="_blank"
                         >
                             Atom
                         </Button>
-                    </ButtonGroup>
+                    </ButtonGrid>
                 )}
             </Box>
         </Layout>
