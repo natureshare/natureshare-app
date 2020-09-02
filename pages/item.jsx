@@ -17,6 +17,7 @@ import _startsWith from 'lodash/startsWith';
 import _endsWith from 'lodash/endsWith';
 import _sortBy from 'lodash/sortBy';
 import _isArray from 'lodash/isArray';
+import _truncate from 'lodash/truncate';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -175,7 +176,7 @@ export default function Item() {
                                 thumbnail_url: thumbnail,
                                 source,
                                 href,
-                                license,
+                                attribution,
                             }) => (
                                 <Grid key={thumbnail} item xs={12} sm={6}>
                                     <Card>
@@ -213,10 +214,12 @@ export default function Item() {
                                                     {source || 'Link'}
                                                 </Button>
                                             )}
-                                            {license && (
-                                                <Button disabled size="small">
-                                                    {license}
-                                                </Button>
+                                            {attribution && (
+                                                <div title={attribution}>
+                                                    <Button disabled size="small">
+                                                        {_truncate(attribution, { length: 20 })}
+                                                    </Button>
+                                                </div>
                                             )}
                                         </CardActions>
                                     </Card>
@@ -542,16 +545,19 @@ export default function Item() {
                             <ListItemText
                                 primary="Photo(s) License"
                                 secondary={
-                                    <LicenseLink
-                                        license={
-                                            (item.photos &&
-                                                item.photos
-                                                    .map((i) => i.license)
-                                                    .filter(Boolean)
-                                                    .join(', ')) ||
-                                            item.license
-                                        }
-                                    />
+                                    <>
+                                        {item.photos &&
+                                            item.photos.map((photo, n) => (
+                                                <span key={photo.original_url}>
+                                                    {n}.{' '}
+                                                    <LicenseLink
+                                                        license={photo.license || item.license}
+                                                    />{' '}
+                                                    {photo.attribution}
+                                                    <br />
+                                                </span>
+                                            ))}
+                                    </>
                                 }
                             />
                         </ListItem>
