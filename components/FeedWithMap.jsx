@@ -11,6 +11,8 @@ import _orderBy from 'lodash/orderBy';
 import _get from 'lodash/get';
 import _pickBy from 'lodash/pickBy';
 import _isEqual from 'lodash/isEqual';
+import _isArray from 'lodash/isArray';
+import _last from 'lodash/last';
 import Pagination from '@material-ui/lab/Pagination';
 import { useRouter } from 'next/router';
 import queryString from 'query-string';
@@ -64,11 +66,10 @@ export default function FeedWithMap({ defaultUrl, children }) {
     const router = useRouter();
 
     const getParams = useCallback(
-        ({ i, g, t, s, o, f, v, q }) => {
+        ({ i, t, s, o, f, v, q }) => {
             const params = _pickBy(
                 {
                     i: shortUrl(i !== undefined ? i : feedUrl),
-                    g: g !== undefined ? g : feedParams.groupByTag,
                     t: (t !== undefined ? t : feedParams.filterTags || []).join('|'),
                     s: s !== undefined ? s : feedParams.itemsSort,
                     o: o !== undefined ? o : feedParams.itemsSortOrder,
@@ -88,12 +89,14 @@ export default function FeedWithMap({ defaultUrl, children }) {
     );
 
     const setParams = (routerPath) => {
-        const { i, g, t, s, o, f, v, q } = queryString.parse(routerPath.split('?', 2)[1]);
+        const { i, t, s, o, f, v, q } = queryString.parse(routerPath.split('?', 2)[1]);
         const url = resolveUrl(i || defaultUrl || '', process.env.CONTENT_HOST);
         setFeedUrl(url);
+        const filterTags = t ? t.split('|') : undefined;
         setFeedParams({
-            groupByTag: g,
-            filterTags: t ? t.split('|') : undefined,
+            groupByTag:
+                _isArray(filterTags) && _last(_last(filterTags)) === '~' ? _last(filterTags) : null,
+            filterTags,
             itemsSort: s,
             itemsSortOrder: o,
             itemsFilter: f ? _fromPairs(f.split('|').map((n) => n.split('~', 2))) : undefined,
@@ -183,80 +186,89 @@ export default function FeedWithMap({ defaultUrl, children }) {
             }
 
             if (filterTags && filterTags.length !== 0) {
-                // console.log('Tags:', filterTags);
+                const normalFilterTags = filterTags.filter((t) => _last(t) !== '~');
+
                 items = items.filter(
                     ({ tags }) =>
                         tags &&
-                        tags.length >= filterTags.length &&
-                        filterTags.reduce((acc, ft) => acc && tags.includes(ft), true),
+                        tags.length >= normalFilterTags.length &&
+                        normalFilterTags.reduce((acc, ft) => acc && tags.includes(ft), true),
                 );
-            }
 
-            if (groupByTag) {
-                // console.log('Group:', groupByTag);
-                items = Object.values(
-                    items.reduce((acc, item) => {
-                        if (item.tags) {
-                            item.tags.forEach((t) => {
-                                if (
-                                    t &&
-                                    _startsWith(t, groupByTag) &&
-                                    (!filterTags || !filterTags.includes(t))
-                                ) {
-                                    if (acc[t] === undefined) {
-                                        acc[t] = {
-                                            id: t,
-                                            url: `/items?${getParams({
-                                                t: [...(filterTags || []), t],
-                                                g: '',
-                                            })}`,
-                                            title: t.replace(groupByTag, ''),
-                                            content_text: '-',
-                                            image: item.image,
-                                            date_published: item.date_published,
-                                            date_modified: item.date_published,
-                                            _geo: {
-                                                allCoordinates:
-                                                    item._geo && item._geo.coordinates
-                                                        ? [item._geo.coordinates]
-                                                        : [],
-                                            },
-                                            _meta: {
-                                                date: item.date_published.split('T', 1)[0],
-                                                itemCount: 1,
-                                            },
-                                        };
-                                    } else {
-                                        /* eslint-disable prefer-destructuring */
-                                        acc[t].image = acc[t].image || item.image;
-                                        acc[t].date_published = [
-                                            acc[t].date_published,
-                                            item.date_published,
-                                        ].sort()[1];
-                                        acc[t].date_modified = [
-                                            acc[t].date_modified,
-                                            item.date_modified,
-                                        ].sort()[1];
-                                        if (item._geo && item._geo.coordinates)
-                                            acc[t]._geo.allCoordinates.push(item._geo.coordinates);
-                                        acc[t]._meta.date = acc[t].date_published.split('T', 1)[0];
-                                        acc[t]._meta.itemCount += 1;
-                                        /* eslint-enable prefer-destructuring */
+                if (groupByTag) {
+                    // console.log('Group:', groupByTag);
+                    items = Object.values(
+                        items.reduce((acc, item) => {
+                            if (item.tags) {
+                                item.tags.forEach((tag) => {
+                                    if (
+                                        tag &&
+                                        _startsWith(tag, groupByTag) &&
+                                        (!filterTags || !filterTags.includes(tag))
+                                    ) {
+                                        const rhs = tag.replace(new RegExp(`^${groupByTag}`), '');
+                                        const t = rhs.includes('~')
+                                            ? `${rhs.split('~', 1)[0]}~`
+                                            : rhs;
+                                        if (acc[t] === undefined) {
+                                            acc[t] = {
+                                                id: t,
+                                                url: `/items?${getParams({
+                                                    t: [...(filterTags || []), groupByTag + t],
+                                                })}`,
+                                                title: t,
+                                                content_text: '-',
+                                                image: item.image,
+                                                date_published: item.date_published,
+                                                date_modified: item.date_published,
+                                                _geo: {
+                                                    allCoordinates:
+                                                        item._geo && item._geo.coordinates
+                                                            ? [item._geo.coordinates]
+                                                            : [],
+                                                },
+                                                _meta: {
+                                                    date: item.date_published.split('T', 1)[0],
+                                                    itemCount: 1,
+                                                },
+                                            };
+                                        } else {
+                                            /* eslint-disable prefer-destructuring */
+                                            acc[t].image = acc[t].image || item.image;
+                                            acc[t].date_published = [
+                                                acc[t].date_published,
+                                                item.date_published,
+                                            ].sort()[1];
+                                            acc[t].date_modified = [
+                                                acc[t].date_modified,
+                                                item.date_modified,
+                                            ].sort()[1];
+                                            if (item._geo && item._geo.coordinates)
+                                                acc[t]._geo.allCoordinates.push(
+                                                    item._geo.coordinates,
+                                                );
+                                            acc[t]._meta.date = acc[t].date_published.split(
+                                                'T',
+                                                1,
+                                            )[0];
+                                            acc[t]._meta.itemCount += 1;
+                                            /* eslint-enable prefer-destructuring */
+                                        }
                                     }
-                                }
-                            });
-                        }
-                        return acc;
-                    }, {}),
-                ).map((item) => {
-                    /* eslint-disable no-param-reassign */
-                    item._geo =
-                        item._geo.allCoordinates.length === 0
-                            ? null
-                            : { coordinates: averageCoord(item._geo.allCoordinates) };
-                    /* eslint-enable no-param-reassign */
-                    return item;
-                });
+                                });
+                            }
+                            return acc;
+                        }, {}),
+                    ).map((item) => {
+                        /* eslint-disable no-param-reassign */
+                        item._geo =
+                            item._geo.allCoordinates.length === 0
+                                ? null
+                                : { coordinates: averageCoord(item._geo.allCoordinates) };
+                        /* eslint-enable no-param-reassign */
+                        return item;
+                    });
+                }
             }
 
             if (feedParams.searchText) {

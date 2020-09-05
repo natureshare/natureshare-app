@@ -5,6 +5,7 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import _endsWith from 'lodash/endsWith';
 import _find from 'lodash/find';
+import _last from 'lodash/last';
 import _startsWith from 'lodash/startsWith';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
@@ -33,9 +34,9 @@ const HeaderButton = ({ text, href, as }) => (
 export default function Items() {
     return (
         <FeedWithMap>
-            {({ feedUrl, getParams, groupByTag, filterTags, items }) => (
+            {({ feedUrl, getParams, filterTags, items }) => (
                 <>
-                    {(groupByTag || (filterTags && filterTags.length !== 0)) && (
+                    {filterTags && filterTags.length !== 0 && (
                         <Box mt={1}>
                             <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
                                 <Typography variant="h4">
@@ -56,15 +57,10 @@ export default function Items() {
                                                     t: filterTags.slice(0, i + 1),
                                                 })}`}
                                             >
-                                                {t.split('~', 2)[1]}
+                                                {_last(t.split('~').filter(Boolean))}
                                             </Link>
                                         </Typography>
                                     ))}
-                                {groupByTag && (
-                                    <Typography variant="h4">
-                                        {groupByTag.split('~', 1)[0]}
-                                    </Typography>
-                                )}
                             </Breadcrumbs>
                         </Box>
                     )}
@@ -77,8 +73,7 @@ export default function Items() {
                                 alignItems="center"
                                 spacing={2}
                             >
-                                {!groupByTag &&
-                                    (!filterTags || filterTags.length === 0) &&
+                                {(!filterTags || filterTags.length === 0) &&
                                     _endsWith(feedUrl, '/items/index.json') && (
                                         <>
                                             <HeaderButton
@@ -111,7 +106,9 @@ export default function Items() {
                                     <HeaderButton
                                         text="ids"
                                         href="/items"
-                                        as={`/items?${getParams({ g: 'id~' })}`}
+                                        as={`/items?${getParams({
+                                            t: [...(filterTags || []), 'id~'],
+                                        })}`}
                                     />
                                 )}
                                 {_find(
@@ -121,7 +118,9 @@ export default function Items() {
                                     <HeaderButton
                                         text="tags"
                                         href="/items"
-                                        as={`/items?${getParams({ g: 'tag~' })}`}
+                                        as={`/items?${getParams({
+                                            t: [...(filterTags || []), 'tag~'],
+                                        })}`}
                                     />
                                 )}
                             </Grid>
