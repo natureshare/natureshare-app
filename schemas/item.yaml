@@ -71,6 +71,9 @@ definitions:
         license: *license
         attribution: *long_label
 
+required:
+  - license
+
 properties:
   id:
     type: array
