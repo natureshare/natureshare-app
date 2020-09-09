@@ -85,9 +85,18 @@ const ItemCard = ({
                     </Typography>
                 )}
                 {title && (!hideTitle || !hideTitle.includes(title)) && (
-                    <Typography variant="h2" component="div">
-                        {title}
-                    </Typography>
+                    <>
+                        <Typography variant="h2" component="div">
+                            {title}
+                        </Typography>
+                        {_meta && _meta.subtitle && (
+                            <Box mt={0.5}>
+                                <Typography variant="h4" component="div" style={{ color: 'grey' }}>
+                                    {_meta.subtitle}
+                                </Typography>
+                            </Box>
+                        )}
+                    </>
                 )}
                 <Box mt={1}>
                     {_meta && (

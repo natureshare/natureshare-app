@@ -5,7 +5,6 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import _endsWith from 'lodash/endsWith';
 import _find from 'lodash/find';
-import _last from 'lodash/last';
 import _startsWith from 'lodash/startsWith';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
@@ -48,19 +47,30 @@ export default function Items() {
                                     </Link>
                                 </Typography>
                                 {filterTags &&
-                                    filterTags.map((t, i) => (
-                                        <Typography key={t} variant="h4">
-                                            <Link
-                                                href="/items"
-                                                as={`/items?${getParams({
-                                                    g: '',
-                                                    t: filterTags.slice(0, i + 1),
-                                                })}`}
-                                            >
-                                                {_last(t.split('~').filter(Boolean))}
-                                            </Link>
-                                        </Typography>
-                                    ))}
+                                    filterTags.map((t, n) =>
+                                        t
+                                            .split('~')
+                                            .filter(Boolean)
+                                            .map((t2, t2n, tsplit) => (
+                                                <Typography key={t} variant="h4">
+                                                    <Link
+                                                        href="/items"
+                                                        as={`/items?${getParams({
+                                                            g: '',
+                                                            t: [
+                                                                ...filterTags.slice(0, n),
+                                                                tsplit.slice(0, t2n + 1).join('~') +
+                                                                    (tsplit.length - 1 !== t2n
+                                                                        ? '~'
+                                                                        : ''),
+                                                            ],
+                                                        })}`}
+                                                    >
+                                                        {t2}
+                                                    </Link>
+                                                </Typography>
+                                            )),
+                                    )}
                             </Breadcrumbs>
                         </Box>
                     )}

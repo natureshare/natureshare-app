@@ -32,7 +32,7 @@ import ExternalSourceIcon from 'mdi-material-ui/OpenInNew';
 import HistoryIcon from 'mdi-material-ui/FormatListNumbered';
 import ChangelogIcon from 'mdi-material-ui/TimelineText';
 import moment from 'moment';
-import { H1, H2, P, Body1, Body2 } from '../components/Typography';
+import { H1, P, Body1, Body2 } from '../components/Typography';
 import Link from '../components/Link';
 import Layout from '../components/Layout';
 import GeoJsonMap from '../components/GeoJsonMap';
@@ -42,6 +42,8 @@ import { resolveUrl, fetchYaml, shortUrl } from '../utils/fetch';
 import FileIcon from '../components/FileIcon';
 import Video from '../components/item/Video';
 import ButtonGrid from '../components/ButtonGrid';
+
+const isoDate = (str) => (str ? moment(str).toISOString(true) : '');
 
 const PageSection = ({ title, children, actions }) => (
     <Accordion defaultExpanded>
@@ -153,14 +155,111 @@ export default function Item() {
         }
     };
 
+    const h1 = useMemo(() => {
+        if (item) {
+            if (item.id && item.id.length !== 0) {
+                if (item.id.length === 1) {
+                    return typeof item.id[0] === 'string' ? item.id[0] : item.id[0].name;
+                }
+                return `${item.id.length} ids`;
+            }
+            if (item.datetime) {
+                return dateHeading(item.datetime);
+            }
+            if (item.created_at || item.updated_at) {
+                return dateHeading(item.created_at || item.updated_at);
+            }
+            return 'Item';
+        }
+        return 'Loading...';
+    }, [item]);
+
+    const h1sub = useMemo(() => {
+        if (
+            item &&
+            item.id &&
+            item.id.length === 1 &&
+            typeof item.id[0] === 'object' &&
+            item.id[0].common
+        ) {
+            return `(${item.id[0].common})`;
+        }
+        return '';
+    }, [item]);
+
     return (
         <Layout title={userName} href={`/items?i=${shortUrl(userItemsUrl)}`}>
             <H1>
-                {(item && item.datetime && dateHeading(item.datetime)) ||
-                    (item && item.created_at && dateHeading(item.created_at)) ||
-                    'Loading...'}
+                {h1}{' '}
+                {h1sub && (
+                    <>
+                        <br />
+                        <small style={{ color: 'grey' }}>{h1sub}</small>
+                    </>
+                )}
             </H1>
-            <H2>by {(userProfile && userProfile.name) || userName}</H2>
+            <P>
+                {item && (
+                    <strong>
+                        {dateHeading(item.datetime || item.created_at || item.updated_at)}
+                    </strong>
+                )}
+                <br />
+                <em>by {(userProfile && userProfile.name) || userName}</em>
+            </P>
+            <Box mt={3} mb={3}>
+                <ButtonGrid
+                    justify="flex-start"
+                    items={[
+                        ...((item &&
+                            item.source &&
+                            item.source.map((source) => (
+                                <Button
+                                    key={source}
+                                    href={source.href}
+                                    target="_blank"
+                                    startIcon={<ExternalSourceIcon />}
+                                    size="small"
+                                    variant="outlined"
+                                >
+                                    {source.name}
+                                </Button>
+                            ))) ||
+                            []),
+                        <Button
+                            href={itemUrl}
+                            target="_blank"
+                            startIcon={<FileIcon type="yaml" />}
+                            size="small"
+                            variant="outlined"
+                        >
+                            YAML
+                        </Button>,
+                        githubBlameUrl && (
+                            <Button
+                                href={githubBlameUrl}
+                                target="_blank"
+                                startIcon={<HistoryIcon />}
+                                size="small"
+                                variant="outlined"
+                            >
+                                History
+                            </Button>
+                        ),
+                        githubCommitsUrl && (
+                            <Button
+                                href={githubCommitsUrl}
+                                target="_blank"
+                                startIcon={<ChangelogIcon />}
+                                size="small"
+                                variant="outlined"
+                            >
+                                Changelog
+                            </Button>
+                        ),
+                    ]}
+                />
+            </Box>
             {item && item.photos && item.photos.length > 0 && (
                 <Box mt={3} mb={3}>
                     <Grid
@@ -177,6 +276,7 @@ export default function Item() {
                                 source,
                                 href,
                                 attribution,
+                                license,
                             }) => (
                                 <Grid key={thumbnail} item xs={12} sm={6}>
                                     <Card>
@@ -204,20 +304,22 @@ export default function Item() {
                                             >
                                                 Full Size
                                             </Button>
-                                            {source && href && (
-                                                <Button
-                                                    disabled={!href}
-                                                    size="small"
-                                                    href={href}
-                                                    target="_blank"
+                                            {(attribution || source) && (
+                                                <div
+                                                    title={`Photo by ${attribution} (${
+                                                        license || ''
+                                                    })`}
                                                 >
-                                                    {source || 'Link'}
-                                                </Button>
-                                            )}
-                                            {attribution && (
-                                                <div title={attribution}>
-                                                    <Button disabled size="small">
-                                                        {_truncate(attribution, { length: 20 })}
+                                                    <Button
+                                                        disabled={!href}
+                                                        size="small"
+                                                        href={href}
+                                                        target="_blank"
+                                                    >
+                                                        &copy;{' '}
+                                                        {_truncate(attribution || source, {
+                                                            length: 32,
+                                                        })}
                                                     </Button>
                                                 </div>
                                             )}
@@ -337,7 +439,8 @@ export default function Item() {
                         {item.tags.map((tag) => (
                             <Grid item key={tag}>
                                 <Chip
-                                    label={tag}
+                                    label={_truncate(tag)}
+                                    title={tag}
                                     variant="outlined"
                                     onClick={() => {}}
                                     component={Link}
@@ -530,16 +633,10 @@ export default function Item() {
                             </>
                         )}
                         <ListItem>
-                            <ListItemText
-                                primary="Created"
-                                secondary={item.created_at && item.created_at.split('T')[0]}
-                            />
+                            <ListItemText primary="Created" secondary={isoDate(item.created_at)} />
                         </ListItem>
                         <ListItem>
-                            <ListItemText
-                                primary="Updated"
-                                secondary={item.updated_at && item.updated_at.split('T')[0]}
-                            />
+                            <ListItemText primary="Updated" secondary={isoDate(item.updated_at)} />
                         </ListItem>
                         <ListItem>
                             <ListItemText
@@ -570,55 +667,6 @@ export default function Item() {
                     </List>
                 </PageSection>
             )}
-            <Box mt={3} mb={3}>
-                <ButtonGrid>
-                    <Button
-                        href={itemUrl}
-                        target="_blank"
-                        startIcon={<FileIcon type="yaml" />}
-                        size="small"
-                        variant="outlined"
-                    >
-                        YAML
-                    </Button>
-                    {githubBlameUrl && (
-                        <Button
-                            href={githubBlameUrl}
-                            target="_blank"
-                            startIcon={<HistoryIcon />}
-                            size="small"
-                            variant="outlined"
-                        >
-                            History
-                        </Button>
-                    )}
-                    {githubCommitsUrl && (
-                        <Button
-                            href={githubCommitsUrl}
-                            target="_blank"
-                            startIcon={<ChangelogIcon />}
-                            size="small"
-                            variant="outlined"
-                        >
-                            Changelog
-                        </Button>
-                    )}
-                    {item &&
-                        item.source &&
-                        item.source.map((source) => (
-                            <Button
-                                key={source}
-                                href={source.href}
-                                target="_blank"
-                                startIcon={<ExternalSourceIcon />}
-                                size="small"
-                                variant="outlined"
-                            >
-                                {source.name}
-                            </Button>
-                        ))}
-                </ButtonGrid>
-            </Box>
         </Layout>
     );
 }
