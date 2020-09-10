@@ -15,13 +15,11 @@ export default function Layout({ title, href, windowTitle, children }) {
                 <meta property="og:title" content={windowTitle || title} />
             </Head>
             <NavHeader title={title} href={href} />
-            <div className="backgroundImage" id="mainContainer">
-                <Container maxWidth="md">
-                    <Box pt={2} pb={5}>
-                        {children}
-                    </Box>
-                </Container>
-            </div>
+            <Container maxWidth="md">
+                <Box pt={2.5} pb={5}>
+                    {children}
+                </Box>
+            </Container>
         </>
     );
 }

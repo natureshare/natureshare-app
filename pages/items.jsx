@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import _endsWith from 'lodash/endsWith';
 import _find from 'lodash/find';
 import _startsWith from 'lodash/startsWith';
+import _startCase from 'lodash/startCase';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import Typography from '@material-ui/core/Typography';
@@ -37,7 +38,10 @@ export default function Items() {
                 <>
                     {filterTags && filterTags.length !== 0 && (
                         <Box mt={1}>
-                            <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
+                            <Breadcrumbs
+                                separator={<NavigateNextIcon fontSize="small" />}
+                                maxItems={5}
+                            >
                                 <Typography variant="h4">
                                     <Link
                                         href="/items"
@@ -66,7 +70,7 @@ export default function Items() {
                                                             ],
                                                         })}`}
                                                     >
-                                                        {t2}
+                                                        {_startCase(t2)}
                                                     </Link>
                                                 </Typography>
                                             )),

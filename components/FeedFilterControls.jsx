@@ -5,9 +5,9 @@ import MapMarkerIcon from 'mdi-material-ui/MapMarkerCheckOutline';
 import Badge from '@material-ui/core/Badge';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
-import { useRouter } from 'next/router';
 import TextField from '@material-ui/core/TextField';
 import { useRef, useEffect } from 'react';
+import Hidden from '@material-ui/core/Hidden';
 
 const filterNext = {
     undefined: 'yes',
@@ -15,8 +15,14 @@ const filterNext = {
     no: undefined,
 };
 
-export default function FeedSortControls({ length, page, itemsFilter, searchText, getParams }) {
-    const router = useRouter();
+export default function FeedSortControls({
+    length,
+    page,
+    lastPage,
+    itemsFilter,
+    searchText,
+    routerReplace,
+}) {
     const searchTimeout = useRef(null);
     const searchFieldRef = useRef();
 
@@ -28,11 +34,6 @@ export default function FeedSortControls({ length, page, itemsFilter, searchText
     const filterIcons = {
         Image: <ImageIcon />,
         Location: <MapMarkerIcon />,
-    };
-
-    const routerReplace = (opt) => {
-        router.replace(router.pathname, `${router.pathname}?${getParams(opt)}`, { shallow: true });
-        return true;
     };
 
     const updateSearchText = (event) => {
@@ -99,13 +100,15 @@ export default function FeedSortControls({ length, page, itemsFilter, searchText
                     size="small"
                     onChange={updateSearchText}
                     placeholder="Search"
-                    style={{ width: '120px' }}
+                    style={{ width: '100px' }}
                 />
             </Grid>
             <Grid item>
-                <Button disabled>
-                    {length} items
-                    {page && page !== 1 && ` (page ${page})`}
+                <Button disabled title={`${length} items, page ${page} of ${lastPage}`}>
+                    <Hidden smUp>~</Hidden>
+                    {length} <Hidden xsDown>items (page </Hidden>
+                    <Hidden smUp>(p</Hidden>
+                    {page}/{lastPage})
                 </Button>
             </Grid>
         </Grid>

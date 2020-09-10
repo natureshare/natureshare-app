@@ -99,6 +99,7 @@ export default function NavHeader({ title, href }) {
                     )}
                 </Toolbar>
             </AppBar>
+            <Toolbar variant="dense" />
             <Drawer anchor="left" open={drawerIsOpen} onClose={() => openDrawer(false)}>
                 <div
                     role="presentation"

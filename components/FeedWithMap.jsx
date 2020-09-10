@@ -57,8 +57,7 @@ function feedParamsReducer(prev, next) {
 
 export default function FeedWithMap({ defaultUrl, children }) {
     const [feedUrl, setFeedUrl] = useState();
-    const [feedParams, setFeedParams] = useReducer(feedParamsReducer, {});
-    const [page, setPage] = useState(1);
+    const [feedParams, setFeedParams] = useReducer(feedParamsReducer, { page: 1 });
     const [error, setError] = useState(null);
     const [feed, setFeed] = useState({});
     const [feedItems, setFeedItems] = useState([]);
@@ -68,7 +67,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
     const router = useRouter();
 
     const getParams = useCallback(
-        ({ i, t, s, o, f, v, q }) => {
+        ({ i, t, s, o, f, v, q, p, m }) => {
             const params = _pickBy(
                 {
                     i: shortUrl(i !== undefined ? i : feedUrl),
@@ -82,6 +81,8 @@ export default function FeedWithMap({ defaultUrl, children }) {
                         .join('|'),
                     v: v !== undefined ? v : feedParams.viewGrid,
                     q: q !== undefined ? q : feedParams.searchText,
+                    p: p !== undefined ? p : 1,
+                    m: m !== undefined ? m : feedParams.showMap,
                 },
                 Boolean,
             );
@@ -90,8 +91,8 @@ export default function FeedWithMap({ defaultUrl, children }) {
         [feedUrl, feedParams],
     );
 
-    const setParams = (routerPath) => {
-        const { i, t, s, o, f, v, q } = queryString.parse(routerPath.split('?', 2)[1]);
+    const loadUrlQuery = (routerPath) => {
+        const { i, t, s, o, f, v, q, p, m } = queryString.parse(routerPath.split('?', 2)[1]);
         const url = resolveUrl(i || defaultUrl || '', process.env.CONTENT_HOST);
         setFeedUrl(url);
         const filterTags = t ? t.split('|') : undefined;
@@ -104,13 +105,15 @@ export default function FeedWithMap({ defaultUrl, children }) {
             itemsFilter: f ? _fromPairs(f.split('|').map((n) => n.split('~', 2))) : undefined,
             viewGrid: v,
             searchText: q,
+            page: parseInt(p || 1, 10) || 1,
+            showMap: m,
         });
     };
 
     useEffect(() => {
-        setParams(router.asPath);
+        loadUrlQuery(router.asPath);
         const handleRouteChange = (url) => {
-            setParams(url);
+            loadUrlQuery(url);
         };
         router.events.on('routeChangeComplete', handleRouteChange);
         return () => {
@@ -118,23 +121,45 @@ export default function FeedWithMap({ defaultUrl, children }) {
         };
     }, []);
 
+    const routerReplace = (opt) => {
+        router.replace(router.pathname, `${router.pathname}?${getParams(opt)}`, { shallow: true });
+        return true;
+    };
+
     useEffect(() => {
-        if (feedUrl) {
-            if (document) {
-                const container = document.getElementById('mainContainer');
-                if (container)
-                    container.scrollTo({
-                        top: 0,
-                        left: 0,
-                        behavior: 'auto',
-                    });
+        try {
+            setTimeout(() => window.scroll({ top: 0 }), 1);
+        } catch (e) {
+            // failsafe
+        }
+    }, [feedUrl]);
+
+    useEffect(() => {
+        if (
+            window &&
+            document &&
+            (feedParams.groupByTag || feedParams.filterTags || feedParams.page)
+        ) {
+            try {
+                const top = document.getElementById('feed-items-grid');
+                if (top) {
+                    setTimeout(
+                        () =>
+                            window.scroll({
+                                top: top.getBoundingClientRect().top + window.scrollY - 75,
+                                behavior: 'smooth',
+                            }),
+                        1,
+                    );
+                }
+            } catch (e) {
+                // failsafe
             }
         }
-    }, [feedUrl, feedParams.groupByTag, feedParams.filterTags, page]);
+    }, [feedParams.groupByTag, feedParams.filterTags, feedParams.page]);
 
     useEffect(() => {
         setError(null);
-        setPage(1);
         setFeed({});
         setFeedItems([]);
         setFeedNextUrl(null);
@@ -151,10 +176,6 @@ export default function FeedWithMap({ defaultUrl, children }) {
             });
         }
     }, [feedUrl]);
-
-    useEffect(() => {
-        setPage(1);
-    }, [feedParams]);
 
     useEffect(() => {
         if (feedNextUrl && feedItems.length !== 0) {
@@ -304,10 +325,10 @@ export default function FeedWithMap({ defaultUrl, children }) {
             : _orderBy(itemsFiltered, [(i) => _get(i, itemsSort, '')], [itemsSortOrder || 'desc']);
     }, [itemsFiltered, feedParams.itemsSort, feedParams.itemsSortOrder]);
 
-    const itemsPage = useMemo(() => itemsSorted.slice((page - 1) * PER_PAGE, page * PER_PAGE), [
-        itemsSorted,
-        page,
-    ]);
+    const itemsPage = useMemo(
+        () => itemsSorted.slice((feedParams.page - 1) * PER_PAGE, feedParams.page * PER_PAGE),
+        [itemsSorted, feedParams.page],
+    );
 
     const lastPage = useMemo(() => Math.ceil(itemsFiltered.length / PER_PAGE), [itemsFiltered]);
 
@@ -402,27 +423,32 @@ export default function FeedWithMap({ defaultUrl, children }) {
                 <FeedFilterControls
                     {...{
                         length: itemsFiltered.length,
-                        page,
+                        page: feedParams.page,
+                        lastPage,
                         itemsFilter: feedParams.itemsFilter,
                         searchText: feedParams.searchText,
-                        getParams,
+                        routerReplace,
                     }}
                 />
             </Box>
-            <Box mt={1}>
-                <GeoJsonMap geo={geo} />
-            </Box>
+            {feedParams.showMap !== '-' && (
+                <Box mt={1}>
+                    <GeoJsonMap geo={geo} />
+                </Box>
+            )}
             <Box mt={1}>
                 <FeedSortControls
                     {...{
                         itemsSort: feedParams.itemsSort,
                         itemsSortOrder: feedParams.itemsSortOrder,
                         viewGrid: feedParams.viewGrid,
-                        getParams,
+                        showMap: feedParams.showMap,
+                        routerReplace,
                     }}
                 />
             </Box>
-            <Box mt={1} id="feedItemsGrid">
+            <div id="top" />
+            <Box mt={1} id="feed-items-grid">
                 {feed.title && itemsPage.length === 0 && <P>No items.</P>}
                 <FeedItemsGrid
                     items={itemsPage}
@@ -437,8 +463,8 @@ export default function FeedWithMap({ defaultUrl, children }) {
             <Box mt={3}>
                 <Pagination
                     count={lastPage}
-                    page={page}
-                    onChange={(e, i) => setPage(i)}
+                    page={feedParams.page}
+                    onChange={(e, i) => routerReplace({ p: i })}
                     variant="outlined"
                     shape="rounded"
                 />

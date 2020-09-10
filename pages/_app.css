@@ -1,23 +1,39 @@
+body {
+  background: #558b2f !important;
+  scrollbar-color: #558b2f #fff5;
+}
+
+.main-background {
+  background: #fff;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+}
+
+.main-container {
+  background: #fff;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.status-bar-background {
+  background-color: #558b2f;
+  position: fixed;
+  height: 200px;
+  top: -200px;
+  right: 0;
+  left: 0;
+  z-index: 10000;
+}
+
 a {
   text-decoration: none !important;
 }
 
 @media screen {
-  .backgroundImage {
-    position: fixed;
-    overflow-y: auto;
-    padding-top: 3px;
-    top: 47px;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: #fff;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    background-size: cover;
-  }
-
   .print-only {
     display: none;
   }

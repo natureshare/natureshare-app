@@ -22,7 +22,11 @@ export default class MyDocument extends Document {
                     <AppHead />
                 </Head>
                 <body>
-                    <Main />
+                    <div className="main-background" />
+                    <div className="main-container">
+                        <Main />
+                    </div>
+                    <div className="status-bar-background" />
                     {/* See leaflet.webpack.config.js */}
                     <script src="/leaflet.js" />
                     <script async src="//embedr.flickr.com/assets/client-code.js" charSet="utf-8" />

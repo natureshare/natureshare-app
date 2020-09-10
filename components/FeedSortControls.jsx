@@ -3,14 +3,19 @@ import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
 import SortAscendingIcon from 'mdi-material-ui/SortAlphabeticalAscending';
 import SortDescendingIcon from 'mdi-material-ui/SortAlphabeticalDescending';
+import MapOnIcon from 'mdi-material-ui/Earth';
+import MapOffIcon from 'mdi-material-ui/EarthOff';
 import GridLargeIcon from 'mdi-material-ui/GridLarge';
 import GridIcon from 'mdi-material-ui/Grid';
 import Grid from '@material-ui/core/Grid';
-import { useRouter } from 'next/router';
 
-export default function FeedSortControls({ itemsSort, itemsSortOrder, viewGrid, getParams }) {
-    const router = useRouter();
-
+export default function FeedSortControls({
+    itemsSort,
+    itemsSortOrder,
+    viewGrid,
+    showMap,
+    routerReplace,
+}) {
     const sortOptions = {
         Title: 'title',
         'Date Published': 'date_published',
@@ -26,11 +31,6 @@ export default function FeedSortControls({ itemsSort, itemsSortOrder, viewGrid, 
         Tags: '_meta.tagsCount',
         Location: '_geo.coordinates',
         Users: '_meta.userCount',
-    };
-
-    const routerReplace = (opt) => {
-        router.replace(router.pathname, `${router.pathname}?${getParams(opt)}`, { shallow: true });
-        return true;
     };
 
     return (
@@ -81,6 +81,15 @@ export default function FeedSortControls({ itemsSort, itemsSortOrder, viewGrid, 
                 >
                     {viewGrid === 'lg' && <GridLargeIcon />}
                     {viewGrid !== 'lg' && <GridIcon />}
+                </IconButton>
+            </Grid>
+            <Grid item>
+                <IconButton
+                    color={showMap === '-' ? 'primary' : undefined}
+                    onClick={() => routerReplace({ m: showMap === '-' ? '' : '-' })}
+                >
+                    {showMap === '-' && <MapOffIcon />}
+                    {showMap !== '-' && <MapOnIcon />}
                 </IconButton>
             </Grid>
         </Grid>
