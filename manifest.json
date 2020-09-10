@@ -2,7 +2,7 @@
  "name": "NatureShare",
  "short_name": "NatureShare",
  "theme_color": "#558b2f",
- "background_color": "#558b2f",
+ "background_color": "#ffffff",
  "display": "standalone",
  "scope": ".",
  "start_url": "/",
