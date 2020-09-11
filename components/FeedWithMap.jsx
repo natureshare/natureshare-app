@@ -8,7 +8,7 @@ import Head from 'next/head';
 import _stripTags from 'underscore.string/stripTags';
 import _startsWith from 'lodash/startsWith';
 import _endsWith from 'lodash/endsWith';
-import _startCase from 'lodash/startCase';
+import _upperFirst from 'lodash/upperFirst';
 import _orderBy from 'lodash/orderBy';
 import _get from 'lodash/get';
 import _pickBy from 'lodash/pickBy';
@@ -244,7 +244,9 @@ export default function FeedWithMap({ defaultUrl, children }) {
                                                         groupByTag + t,
                                                     ],
                                                 })}`,
-                                                title: _startCase(t),
+                                                title: _upperFirst(
+                                                    t.replace(/_/g, ' ').replace(/~$/, ''),
+                                                ),
                                                 content_text: '-',
                                                 image: item.image,
                                                 date_published: item.date_published,
