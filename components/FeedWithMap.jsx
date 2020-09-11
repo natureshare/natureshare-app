@@ -316,6 +316,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
         feedParams.filterTags,
         feedParams.groupByTag,
         feedParams.searchText,
+        feedParams.showMap,
     ]);
 
     const itemsSorted = useMemo(() => {
