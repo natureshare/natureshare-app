@@ -45,7 +45,7 @@ export default function Items() {
                                 <Typography variant="h4">
                                     <Link
                                         href="/items"
-                                        as={`/items?${getParams({ g: '', t: [] })}`}
+                                        as={`/items?${getParams({ g: '', t: ['-'] })}`}
                                     >
                                         Items
                                     </Link>

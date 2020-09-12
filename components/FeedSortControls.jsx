@@ -12,6 +12,7 @@ import Grid from '@material-ui/core/Grid';
 export default function FeedSortControls({
     itemsSort,
     itemsSortOrder,
+    defaultSortOrder,
     viewGrid,
     showMap,
     routerReplace,
@@ -66,12 +67,19 @@ export default function FeedSortControls({
             </Grid>
             <Grid item>
                 <IconButton
-                    disabled={!itemsSort}
-                    color="primary"
-                    onClick={() => routerReplace({ o: itemsSortOrder === 'asc' ? '' : 'asc' })}
+                    color={
+                        itemsSortOrder && itemsSortOrder !== defaultSortOrder
+                            ? 'primary'
+                            : undefined
+                    }
+                    onClick={() =>
+                        routerReplace({
+                            o: (itemsSortOrder || defaultSortOrder) === 'asc' ? 'desc' : 'asc',
+                        })
+                    }
                 >
-                    {itemsSortOrder === 'asc' && <SortAscendingIcon />}
-                    {itemsSortOrder !== 'asc' && <SortDescendingIcon />}
+                    {(itemsSortOrder || defaultSortOrder) === 'asc' && <SortAscendingIcon />}
+                    {(itemsSortOrder || defaultSortOrder) !== 'asc' && <SortDescendingIcon />}
                 </IconButton>
             </Grid>
             <Grid item>

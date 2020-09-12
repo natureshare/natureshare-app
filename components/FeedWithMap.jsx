@@ -2,6 +2,7 @@
 /* eslint-disable react/no-array-index-key */
 
 import Box from '@material-ui/core/Box';
+import Typography from '@material-ui/core/Typography';
 import { useState, useEffect, useMemo, useCallback, useReducer } from 'react';
 import Button from '@material-ui/core/Button';
 import Head from 'next/head';
@@ -34,6 +35,8 @@ import FeedFilterControls from './FeedFilterControls';
 import ButtonGrid from './ButtonGrid';
 
 const PER_PAGE = 52;
+
+const DEFAULT_SORT_ORDER = 'desc';
 
 const coord = (ary) =>
     ary.reduce((acc, val) => acc && Boolean(parseFloat(val)), true)
@@ -95,11 +98,9 @@ export default function FeedWithMap({ defaultUrl, children }) {
         const { i, t, s, o, f, v, q, p, m } = queryString.parse(routerPath.split('?', 2)[1]);
         const url = resolveUrl(i || defaultUrl || '', process.env.CONTENT_HOST);
         setFeedUrl(url);
-        const filterTags = t ? t.split('|') : undefined;
+        const tags = t ? t.split('|') : undefined;
         setFeedParams({
-            groupByTag:
-                _isArray(filterTags) && _last(_last(filterTags)) === '~' ? _last(filterTags) : null,
-            filterTags,
+            filterTags: tags,
             itemsSort: s,
             itemsSortOrder: o,
             itemsFilter: f ? _fromPairs(f.split('|').map((n) => n.split('~', 2))) : undefined,
@@ -135,11 +136,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
     }, [feedUrl]);
 
     useEffect(() => {
-        if (
-            window &&
-            document &&
-            (feedParams.groupByTag || feedParams.filterTags || feedParams.page)
-        ) {
+        if (window && document && (feedParams.filterTags || feedParams.page)) {
             try {
                 const top = document.getElementById('feed-items-grid');
                 if (top) {
@@ -156,7 +153,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
                 // failsafe
             }
         }
-    }, [feedParams.groupByTag, feedParams.filterTags, feedParams.page]);
+    }, [feedParams.filterTags, feedParams.page]);
 
     useEffect(() => {
         setError(null);
@@ -191,11 +188,29 @@ export default function FeedWithMap({ defaultUrl, children }) {
         }
     }, [feedNextUrl]);
 
+    const filterTags = useMemo(() => {
+        if (feedParams && _isArray(feedParams.filterTags) && feedParams.filterTags.length !== 0) {
+            if (feedParams.filterTags.length === 1 && feedParams.filterTags[0] === '-') {
+                return [];
+            }
+            return feedParams.filterTags;
+        }
+        if (
+            feed &&
+            feed._display &&
+            _isArray(feed._display.start_tags) &&
+            feed._display.start_tags.length !== 0
+        ) {
+            return feed._display.start_tags;
+        }
+        return null;
+    }, [feed, feedParams.filterTags]);
+
     const itemsFiltered = useMemo(() => {
         if (feedItems.length !== 0) {
             let items = feedItems;
 
-            const { itemsFilter, filterTags, groupByTag } = feedParams;
+            const { itemsFilter } = feedParams;
 
             if (itemsFilter) {
                 Object.keys(itemsFilter).forEach((k) => {
@@ -208,7 +223,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
                 });
             }
 
-            if (filterTags && filterTags.length !== 0) {
+            if (_isArray(filterTags) && filterTags.length !== 0) {
                 const normalFilterTags = filterTags.filter((t) => _last(t) !== '~');
 
                 items = items.filter(
@@ -217,6 +232,8 @@ export default function FeedWithMap({ defaultUrl, children }) {
                         tags.length >= normalFilterTags.length &&
                         normalFilterTags.reduce((acc, ft) => acc && tags.includes(ft), true),
                 );
+
+                const groupByTag = _last(_last(filterTags)) === '~' ? _last(filterTags) : null;
 
                 if (groupByTag) {
                     // console.log('Group:', groupByTag);
@@ -312,20 +329,25 @@ export default function FeedWithMap({ defaultUrl, children }) {
             return items;
         }
         return [];
-    }, [
-        feedItems,
-        feedParams.itemsFilter,
-        feedParams.filterTags,
-        feedParams.groupByTag,
-        feedParams.searchText,
-        feedParams.showMap,
-    ]);
+    }, [feedItems, feedParams.itemsFilter, filterTags, feedParams.searchText, feedParams.showMap]);
 
     const itemsSorted = useMemo(() => {
-        const { itemsSort, itemsSortOrder } = feedParams;
+        let { itemsSort, itemsSortOrder } = feedParams;
+        if (feed && feed._display) {
+            if (!itemsSort && feed._display.sort_by) {
+                itemsSort = feed._display.sort_by;
+            }
+            if (!itemsSortOrder && feed._display.sort_order) {
+                itemsSortOrder = feed._display.sort_order;
+            }
+        }
         return !itemsSort
             ? itemsFiltered
-            : _orderBy(itemsFiltered, [(i) => _get(i, itemsSort, '')], [itemsSortOrder || 'desc']);
+            : _orderBy(
+                  itemsFiltered,
+                  [(i) => _get(i, itemsSort, '')],
+                  [itemsSortOrder || DEFAULT_SORT_ORDER],
+              );
     }, [itemsFiltered, feedParams.itemsSort, feedParams.itemsSortOrder]);
 
     const itemsPage = useMemo(
@@ -391,9 +413,9 @@ export default function FeedWithMap({ defaultUrl, children }) {
                     />
                 </Head>
             )}
-            <Box mb={2}>
+            <Box mb={2} style={{ overflowWrap: 'break-word' }}>
                 <H1>{feed.title || error || 'Loading...'}</H1>
-                {feed.description && (
+                {feed && feed.description && (
                     <Collapse
                         in={feed.description.length < 300 || openDescription}
                         timeout="auto"
@@ -410,16 +432,28 @@ export default function FeedWithMap({ defaultUrl, children }) {
                                 <ExpandMoreIcon />
                             </IconButton>
                         )}
-                        <P>{_stripTags(feed.description)}</P>
+                        <Typography variant="body1" component="div">
+                            {feed._display && feed._display.description_html && (
+                                /* eslint-disable react/no-danger */
+                                <div
+                                    dangerouslySetInnerHTML={{
+                                        __html: feed._display.description_html,
+                                    }}
+                                />
+                                /* eslint-enable react/no-danger */
+                            )}
+                            {(!feed._display || !feed._display.description_html) && (
+                                <p>{_stripTags(feed.description)}</p>
+                            )}
+                        </Typography>
                     </Collapse>
                 )}
             </Box>
             {children &&
                 children({
                     feedUrl,
-                    groupByTag: feedParams.groupByTag,
-                    filterTags: feedParams.filterTags,
                     getParams,
+                    filterTags,
                     items: itemsFiltered,
                 })}
             <Box mt={1}>
@@ -435,15 +469,18 @@ export default function FeedWithMap({ defaultUrl, children }) {
                 />
             </Box>
             {feedParams.showMap !== '-' && (
-                <Box mt={1}>
+                <Box mt={1} mb={1}>
                     <GeoJsonMap geo={geo} />
                 </Box>
             )}
-            <Box mt={1}>
+            <Box>
                 <FeedSortControls
                     {...{
                         itemsSort: feedParams.itemsSort,
                         itemsSortOrder: feedParams.itemsSortOrder,
+                        defaultSortOrder:
+                            (feed && feed._display && feed._display.sort_order) ||
+                            DEFAULT_SORT_ORDER,
                         viewGrid: feedParams.viewGrid,
                         showMap: feedParams.showMap,
                         routerReplace,
@@ -456,11 +493,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
                 <FeedItemsGrid
                     items={itemsPage}
                     viewGrid={feedParams.viewGrid}
-                    hideTitle={
-                        !feedParams.groupByTag &&
-                        feedParams.filterTags &&
-                        feedParams.filterTags.map((i) => i.split('~', 2)[1])
-                    }
+                    hideTitle={filterTags && _last((_last(filterTags) || '').split('~'))}
                 />
             </Box>
             <Box mt={3}>
@@ -473,7 +506,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
                 />
             </Box>
             <Box mt={5} style={{ textAlign: 'center' }}>
-                {feedUrl && !feedParams.filterTags && !feedParams.groupByTag && (
+                {feedUrl && !feedParams.filterTags && (
                     <ButtonGrid>
                         <Button
                             size="small"

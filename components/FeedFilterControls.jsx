@@ -104,13 +104,17 @@ export default function FeedSortControls({
                 />
             </Grid>
             <Grid item>
-                <Button disabled title={`${length} items, page ${page} of ${lastPage}`}>
-                    <Hidden smUp>~</Hidden>
-                    {length} <Hidden xsDown>items (page </Hidden>
-                    <Hidden smUp>(p</Hidden>
-                    {page}/{lastPage})
+                <Button disabled title={`${length} items`}>
+                    {length} items
                 </Button>
             </Grid>
+            <Hidden xsDown>
+                <Grid item>
+                    <Button disabled title={`Page ${page} of ${lastPage}`}>
+                        Page {page}/{lastPage}
+                    </Button>
+                </Grid>
+            </Hidden>
         </Grid>
     );
 }

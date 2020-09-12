@@ -3,6 +3,10 @@ body {
   scrollbar-color: #558b2f #fff5;
 }
 
+p {
+  overflow-wrap: break-word;
+}
+
 .main-background {
   background: #fff;
   position: fixed;
