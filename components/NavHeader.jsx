@@ -19,8 +19,10 @@ import LogOutIcon from 'mdi-material-ui/Logout';
 import AboutIcon from 'mdi-material-ui/Information';
 import HelpIcon from 'mdi-material-ui/HelpCircle';
 import UploadIcon from 'mdi-material-ui/CloudUpload';
-import PersonIcon from '@material-ui/icons/Person';
+import SignUpIcon from '@material-ui/icons/PersonAdd';
+import AccountDetailsIcon from '@material-ui/icons/AssignmentInd';
 import ChevronRightIcon from 'mdi-material-ui/ChevronRight';
+import PeopleIcon from '@material-ui/icons/PeopleAlt';
 import Hidden from '@material-ui/core/Hidden';
 import FileCodeIcon from 'mdi-material-ui/FileCode';
 import Link from './Link';
@@ -114,11 +116,18 @@ export default function NavHeader({ title, href }) {
                             </ListItemIcon>
                             <ListItemText primary="Home" />
                         </ListItem>
+                        <Divider />
                         <ListItem button component={Link} href="/collections">
                             <ListItemIcon>
                                 <CollectionsIcon />
                             </ListItemIcon>
                             <ListItemText primary="Collections" />
+                        </ListItem>
+                        <ListItem button component={Link} href="/items" as="/items?i=%2Findex.json">
+                            <ListItemIcon>
+                                <PeopleIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="People" />
                         </ListItem>
                         <Divider />
                         {process.env.API_HOST && (
@@ -133,7 +142,7 @@ export default function NavHeader({ title, href }) {
                                         </ListItem>
                                         <ListItem button onClick={() => setOpenNewUserForm(true)}>
                                             <ListItemIcon>
-                                                <PersonIcon />
+                                                <SignUpIcon />
                                             </ListItemIcon>
                                             <ListItemText primary="Sign Up" />
                                         </ListItem>
@@ -156,7 +165,7 @@ export default function NavHeader({ title, href }) {
                                     <>
                                         <ListItem button onClick={() => setOpenUserForm(true)}>
                                             <ListItemIcon>
-                                                <PersonIcon />
+                                                <AccountDetailsIcon />
                                             </ListItemIcon>
                                             <ListItemText primary="Account" />
                                         </ListItem>
