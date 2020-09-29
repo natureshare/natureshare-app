@@ -512,7 +512,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
                             size="small"
                             variant="outlined"
                             startIcon={<FileIcon type="json" />}
-                            href={resolveUrl(`./index.json`, feedUrl)}
+                            href={feedUrl}
                             target="_blank"
                         >
                             JSON
@@ -521,7 +521,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
                             size="small"
                             variant="outlined"
                             startIcon={<FileIcon type="json" />}
-                            href={resolveUrl(`./index.geo.json`, feedUrl)}
+                            href={feedUrl.replace(/\.json$/, '.geo.json')}
                             target="_blank"
                         >
                             GeoJSON
@@ -530,7 +530,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
                             size="small"
                             variant="outlined"
                             startIcon={<FileIcon type="xml" />}
-                            href={resolveUrl(`./index.rss.xml`, feedUrl)}
+                            href={feedUrl.replace(/\.json$/, '.rss.xml')}
                             target="_blank"
                         >
                             RSS
@@ -539,7 +539,7 @@ export default function FeedWithMap({ defaultUrl, children }) {
                             size="small"
                             variant="outlined"
                             startIcon={<FileIcon type="xml" />}
-                            href={resolveUrl(`./index.atom.xml`, feedUrl)}
+                            href={feedUrl.replace(/\.json$/, '.atom.xml')}
                             target="_blank"
                         >
                             Atom

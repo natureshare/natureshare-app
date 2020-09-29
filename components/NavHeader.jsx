@@ -39,7 +39,6 @@ export default function NavHeader({ title, href }) {
     const [user, setUser] = useContext(UserContext);
 
     const logOut = () => {
-        setUser({});
         if (window && typeof window === 'object') {
             window.localStorage.removeItem('userToken');
             if (process.env.API_HOST)
@@ -51,6 +50,7 @@ export default function NavHeader({ title, href }) {
                     .then(() => {})
                     .catch(() => {});
         }
+        setUser({});
     };
 
     return (
