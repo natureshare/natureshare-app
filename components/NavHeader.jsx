@@ -3,7 +3,7 @@
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from 'mdi-material-ui/Flower';
+import MenuIcon from 'mdi-material-ui/Menu';
 import Box from '@material-ui/core/Box';
 import React, { useState, useContext } from 'react';
 import Drawer from '@material-ui/core/Drawer';
