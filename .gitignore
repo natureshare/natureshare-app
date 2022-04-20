@@ -5,6 +5,7 @@
 
 /.env.local
 /.env.docker
+/.env.*.disabled
 
 /build
 /out

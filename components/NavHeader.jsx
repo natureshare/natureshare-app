@@ -124,20 +124,31 @@ export default function NavHeader({ title, href }) {
                     style={{ width: '250px' }}
                 >
                     <List component="nav">
-                        <ListItem button component={Link} href="/">
+                        <ListItem button component={Link} href="/" style={{ color: 'black' }}>
                             <ListItemIcon>
                                 <HomeIcon />
                             </ListItemIcon>
                             <ListItemText primary="Home" />
                         </ListItem>
                         <Divider />
-                        <ListItem button component={Link} href="/collections">
+                        <ListItem
+                            button
+                            component={Link}
+                            href="/collections"
+                            style={{ color: 'black' }}
+                        >
                             <ListItemIcon>
                                 <CollectionsIcon />
                             </ListItemIcon>
                             <ListItemText primary="Collections" />
                         </ListItem>
-                        <ListItem button component={Link} href="/items" as="/items?i=%2Findex.json">
+                        <ListItem
+                            button
+                            component={Link}
+                            href="/items"
+                            as="/items?i=%2Findex.json"
+                            style={{ color: 'black' }}
+                        >
                             <ListItemIcon>
                                 <PeopleIcon />
                             </ListItemIcon>
@@ -148,13 +159,21 @@ export default function NavHeader({ title, href }) {
                             <>
                                 {user && !user.name && (
                                     <>
-                                        <ListItem button onClick={() => setOpenLogInForm(true)}>
+                                        <ListItem
+                                            button
+                                            onClick={() => setOpenLogInForm(true)}
+                                            style={{ color: 'black' }}
+                                        >
                                             <ListItemIcon>
                                                 <LogInIcon />
                                             </ListItemIcon>
                                             <ListItemText primary="Log In" />
                                         </ListItem>
-                                        <ListItem button onClick={() => setOpenNewUserForm(true)}>
+                                        <ListItem
+                                            button
+                                            onClick={() => setOpenNewUserForm(true)}
+                                            style={{ color: 'black' }}
+                                        >
                                             <ListItemIcon>
                                                 <SignUpIcon />
                                             </ListItemIcon>
@@ -162,13 +181,25 @@ export default function NavHeader({ title, href }) {
                                         </ListItem>
                                     </>
                                 )}
-                                <ListItem button component={Link} href="/upload" as="/upload">
+                                <ListItem
+                                    button
+                                    component={Link}
+                                    href="/upload"
+                                    as="/upload"
+                                    style={{ color: 'black' }}
+                                >
                                     <ListItemIcon>
                                         <UploadIcon />
                                     </ListItemIcon>
                                     <ListItemText primary="Upload" />
                                 </ListItem>
-                                <ListItem button component={Link} href="/metadata" as="/metadata">
+                                <ListItem
+                                    button
+                                    component={Link}
+                                    href="/metadata"
+                                    as="/metadata"
+                                    style={{ color: 'black' }}
+                                >
                                     <ListItemIcon>
                                         <FileCodeIcon />
                                     </ListItemIcon>
@@ -177,13 +208,21 @@ export default function NavHeader({ title, href }) {
 
                                 {user && user.name && (
                                     <>
-                                        <ListItem button onClick={() => setOpenUserForm(true)}>
+                                        <ListItem
+                                            button
+                                            onClick={() => setOpenUserForm(true)}
+                                            style={{ color: 'black' }}
+                                        >
                                             <ListItemIcon>
                                                 <AccountDetailsIcon />
                                             </ListItemIcon>
                                             <ListItemText primary="Account" />
                                         </ListItem>
-                                        <ListItem button onClick={logOut}>
+                                        <ListItem
+                                            button
+                                            onClick={logOut}
+                                            style={{ color: 'black' }}
+                                        >
                                             <ListItemIcon>
                                                 <LogOutIcon />
                                             </ListItemIcon>
@@ -194,13 +233,25 @@ export default function NavHeader({ title, href }) {
                             </>
                         )}
                         <Divider />
-                        <ListItem button component={Link} href="/help" as="/help">
+                        <ListItem
+                            button
+                            component={Link}
+                            href="/help"
+                            as="/help"
+                            style={{ color: 'black' }}
+                        >
                             <ListItemIcon>
                                 <HelpIcon />
                             </ListItemIcon>
                             <ListItemText primary="Help" />
                         </ListItem>
-                        <ListItem button component={Link} href="/about" as="/about">
+                        <ListItem
+                            button
+                            component={Link}
+                            href="/about"
+                            as="/about"
+                            style={{ color: 'black' }}
+                        >
                             <ListItemIcon>
                                 <AboutIcon />
                             </ListItemIcon>
