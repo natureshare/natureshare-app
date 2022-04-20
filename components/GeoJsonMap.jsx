@@ -41,14 +41,10 @@ export default function GeoJsonMap({ geo }) {
             geoBaseLayer.current = window.L.markerClusterGroup({
                 showCoverageOnHover: false,
                 removeOutsideVisibleBounds: true,
-                animate: false,
+                animate: true,
                 animateAddingMarkers: false,
                 chunkedLoading: true,
                 zoomToBoundsOnClick: true,
-            });
-
-            geoBaseLayer.current.on('clusterclick', (e) => {
-                e.layer.zoomToBounds({ padding: [20, 20], animate: true });
             });
 
             window.L.layerGroup();
@@ -58,7 +54,7 @@ export default function GeoJsonMap({ geo }) {
             lMap.current = window.L.map(container, {
                 center: [0, 0],
                 zoom: 1,
-                scrollWheelZoom: true,
+                scrollWheelZoom: false,
                 fullscreenControl: {
                     pseudoFullscreen: true,
                 },

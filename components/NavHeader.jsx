@@ -2,6 +2,7 @@
 
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
+import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from 'mdi-material-ui/Menu';
 import Box from '@material-ui/core/Box';
@@ -57,9 +58,22 @@ export default function NavHeader({ title, href }) {
         <>
             <AppBar position="fixed">
                 <Toolbar variant="dense">
-                    <IconButton edge="start" color="inherit" onClick={() => openDrawer(true)}>
-                        <MenuIcon />
-                    </IconButton>
+                    <Hidden smDown>
+                        <Box mr={2}>
+                            <Button
+                                startIcon={<MenuIcon />}
+                                color="inherit"
+                                onClick={() => openDrawer(true)}
+                            >
+                                Menu
+                            </Button>
+                        </Box>
+                    </Hidden>
+                    <Hidden mdUp>
+                        <IconButton edge="start" color="inherit" onClick={() => openDrawer(true)}>
+                            <MenuIcon />
+                        </IconButton>
+                    </Hidden>
                     <Box ml={1}>
                         <Link
                             href="/"
